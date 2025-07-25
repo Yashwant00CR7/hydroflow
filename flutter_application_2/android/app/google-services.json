@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "553304393821",
+    "project_id": "hydroflow-e8b81",
+    "storage_bucket": "hydroflow-e8b81.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:553304393821:android:82b9a78f112dad3ed5e5b4",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "553304393821-3nctqm99gmvmk5inj7uhdthlk1o22bsb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_application_2",
+            "certificate_hash": "84e1aceb4efca6217d34b89bb3e230869d9bb7af"
+          }
+        },
+        {
+          "client_id": "553304393821-l82fgjlnl3ce2pp4gcshb8d3890pjvm0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvxPW2_jWZM2TKNDkFBb6w0jvSAuUdNJI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "553304393821-l82fgjlnl3ce2pp4gcshb8d3890pjvm0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "553304393821-4vo2lt691fsn509gnetf5qhbidmdihjc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterApplication2"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
