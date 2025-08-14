@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pinecone_grok_service.dart';
+import 'embedding_service.dart';
 import 'package:http/http.dart' as http;
 import 'network_test.dart';
 
@@ -88,13 +89,6 @@ Ask me anything about hydraulic systems!''',
     _scrollToBottom();
 
     try {
-      // Create a simple embedding function (you'll need to replace this with actual embedding API)
-      Future<List<double>> embedText(String text) async {
-        // TODO: Replace with actual embedding API call
-        // For now, return a dummy embedding
-        return List.generate(1536, (index) => (index % 100) / 100.0);
-      }
-
       // Test network connectivity first
       try {
         final testResponse = await http.get(
@@ -122,7 +116,7 @@ Ask me anything about hydraulic systems!''',
       // Get response from the service
       final response = await _service.answerUserQuery(
         userQuery: message,
-        embedder: embedText,
+        embedder: EmbeddingService.getEmbeddingFunction(),
       );
 
       setState(() {
@@ -148,6 +142,16 @@ Error details: $e''';
         errorMessage = 'Request timed out. Please try again.';
       } else if (e.toString().contains('401') || e.toString().contains('403')) {
         errorMessage = 'Authentication error. Please check your API keys.';
+      } else if (e.toString().contains('No data found')) {
+        errorMessage =
+            '''I couldn't find relevant information in my knowledge base.
+
+This might be because:
+• The question is outside my hydraulic expertise
+• The knowledge base needs to be updated
+• Try rephrasing your question
+
+Error details: $e''';
       }
 
       setState(() {
@@ -225,7 +229,7 @@ Error details: $e''';
                             'Pinecone: ${results['pinecone'] == true ? '✅ Connected' : '❌ Failed'}',
                           ),
                           Text(
-                            'Grok API: ${results['grok'] == true ? '✅ Connected' : '❌ Failed'}',
+                            'Groq API: ${results['groq'] == true ? '✅ Connected' : '❌ Failed'}',
                           ),
                           const SizedBox(height: 16),
                           if (results['internet'] != true)
@@ -238,9 +242,9 @@ Error details: $e''';
                               '❌ Cannot reach Pinecone API. Check your API key and endpoint.',
                             ),
                           if (results['internet'] == true &&
-                              results['grok'] != true)
+                              results['groq'] != true)
                             const Text(
-                              '❌ Cannot reach Grok API. Check your API key.',
+                              '❌ Cannot reach Groq API. Check your API key.',
                             ),
                         ],
                       ),

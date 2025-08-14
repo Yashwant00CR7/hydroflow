@@ -36,23 +36,23 @@ class NetworkTest {
     }
   }
 
-  /// Test Grok API connectivity
-  static Future<bool> testGrokConnection() async {
+  /// Test Groq API connectivity
+  static Future<bool> testGroqConnection() async {
     try {
       final response = await http
           .get(
-            Uri.parse('https://api.x.ai/v1/models'),
+            Uri.parse('https://api.groq.com/openai/v1/models'),
             headers: {
               'Authorization':
-                  'Bearer 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',
+                  'Bearer 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',
             },
           )
           .timeout(const Duration(seconds: 10));
 
-      print('Grok test response: ${response.statusCode}');
+      print('Groq test response: ${response.statusCode}');
       return response.statusCode == 200;
     } catch (e) {
-      print('Grok connection test failed: $e');
+      print('Groq connection test failed: $e');
       return false;
     }
   }
@@ -63,7 +63,7 @@ class NetworkTest {
 
     results['internet'] = await testInternetConnection();
     results['pinecone'] = await testPineconeConnection();
-    results['grok'] = await testGrokConnection();
+    results['groq'] = await testGroqConnection();
 
     return results;
   }

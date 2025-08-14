@@ -1,0 +1,10 @@
+{
+  "model_name": "all-MiniLM-L6-v2",
+  "model_type": "sentence_transformer",
+  "embedding_dimension": 384,
+  "description": "Sentence transformer model converted to TensorFlow Lite for mobile deployment",
+  "input_type": "float32",
+  "output_type": "float32",
+  "framework": "sentence-transformers",
+  "version": "1.0"
+}

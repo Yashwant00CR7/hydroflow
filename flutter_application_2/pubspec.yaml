@@ -68,8 +68,12 @@ flutter_launcher_icons:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-     - assets/test.jpg
      - assets/data.pdf
+     - assets/data.docx
+     - assets/ph-278-4sh.pdf
+     - assets/ph 277 - 4sp.pdf
+     - assets/ph154-r2at-2sn-hose.pdf
+     - assets/ph153-r1at-1-sn-hose.pdf
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

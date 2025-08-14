@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Service for interacting with Pinecone (vector DB) and Grok API (LLM)
+/// Service for interacting with Pinecone (vector DB) and Groq API (LLM)
 class PineconeGrokService {
   // === CONFIGURATION ===
   // TODO: Replace with your actual Pinecone API key and environment
@@ -10,12 +10,12 @@ class PineconeGrokService {
   static const String pineconeEnvironment = 'us-east-1'; // e.g. 'us-east1-gcp'
   static const String pineconeIndex = 'hydroflow'; // e.g. 'hydraulic-knowledge'
   static const String pineconeBaseUrl =
-      'https://hydroflow-us-east-1.svc.pinecone.io';
+      'https://hydroflow-qx0130g.svc.aped-4627-b74a.pinecone.io';
 
-  // Grok API
-  static const String grokApiKey =
-      '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';
-  static const String grokBaseUrl = 'https://api.x.ai/v1';
+  // Groq API (updated from Grok)
+  static const String groqApiKey =
+      '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';
+  static const String groqBaseUrl = 'https://api.groq.com/openai/v1';
 
   /// Upsert (add/update) a document to Pinecone
   /// [id] - unique id for the document
@@ -103,17 +103,17 @@ class PineconeGrokService {
     }
   }
 
-  /// Send user query and context to Grok API for a final answer
+  /// Send user query and context to Groq API for a final answer
   /// [userQuery] - the user's question
   /// [context] - context string retrieved from Pinecone
-  Future<String> askGrok({
+  Future<String> askGroq({
     required String userQuery,
     required String context,
   }) async {
     try {
-      final url = Uri.parse('$grokBaseUrl/chat/completions');
+      final url = Uri.parse('$groqBaseUrl/chat/completions');
       final body = {
-        'model': 'grok-beta',
+        'model': 'llama3-8b-8192', // Groq compatible model
         'messages': [
           {
             'role': 'system',
@@ -132,7 +132,7 @@ class PineconeGrokService {
           .post(
             url,
             headers: {
-              'Authorization': 'Bearer $grokApiKey',
+              'Authorization': 'Bearer $groqApiKey',
               'Content-Type': 'application/json',
             },
             body: jsonEncode(body),
@@ -143,12 +143,12 @@ class PineconeGrokService {
         final data = jsonDecode(response.body);
         return data['choices'][0]['message']['content'] ?? 'No answer.';
       } else {
-        print('Grok API error: ${response.statusCode} - ${response.body}');
-        return 'Error: Unable to get response from Grok API (Status: ${response.statusCode}).';
+        print('Groq API error: ${response.statusCode} - ${response.body}');
+        return 'Error: Unable to get response from Groq API (Status: ${response.statusCode}).';
       }
     } catch (e) {
-      print('Grok API exception: $e');
-      return 'Error: Unable to connect to Grok API. Please check your internet connection.';
+      print('Groq API exception: $e');
+      return 'Error: Unable to connect to Groq API. Please check your internet connection.';
     }
   }
 
@@ -174,8 +174,8 @@ class PineconeGrokService {
           .map((m) => m['metadata']?['text'] ?? '')
           .join('\n---\n');
 
-      // 3. Ask Grok with the context
-      return await askGrok(userQuery: userQuery, context: context);
+      // 3. Ask Groq with the context
+      return await askGroq(userQuery: userQuery, context: context);
     } catch (e) {
       print('AnswerUserQuery exception: $e');
       return 'Sorry, I encountered an error while processing your request. Please try again.';
