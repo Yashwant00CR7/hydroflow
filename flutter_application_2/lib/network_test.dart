@@ -40,10 +40,7 @@ class NetworkTest {
       final response = await http
           .get(
             Uri.parse('https://api.groq.com/openai/v1/models'),
-            headers: {
-              'Authorization':
-                  'Bearer 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',
-            },
+            headers: {'Authorization': 'Bearer ${EnvConfig.groqApiKey}'},
           )
           .timeout(const Duration(seconds: 10));
 
