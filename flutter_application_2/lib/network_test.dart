@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'config/env_config.dart';
 
 class NetworkTest {
   /// Test basic internet connectivity
@@ -21,10 +22,7 @@ class NetworkTest {
       final response = await http
           .get(
             Uri.parse('https://hydroflow-us-east-1.svc.pinecone.io'),
-            headers: {
-              'Api-Key':
-                  'pcsk_2RJN7Z_LfuY91XZUs6LpcANxFgg8MnBvMfFNKUuStinbEy68r8XuBp1sNeJpMRAU9kxGxQ',
-            },
+            headers: {'Api-Key': EnvConfig.pineconeApiKey},
           )
           .timeout(const Duration(seconds: 10));
 

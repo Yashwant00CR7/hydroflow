@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'config/env_config.dart';
 
 /// Service for generating text embeddings
 class EmbeddingService {
-  static const String _pineconeApiKey =
-      'pcsk_2RJN7Z_LfuY91XZUs6LpcANxFgg8MnBvMfFNKUuStinbEy68r8XuBp1sNeJpMRAU9kxGxQ';
-  static const String _pineconeBaseUrl =
-      'https://hydroflow-qx0130g.svc.aped-4627-b74a.pinecone.io';
+  /// Get Pinecone API key from environment variables
+  static String get _pineconeApiKey => EnvConfig.pineconeApiKey;
+
+  /// Get Pinecone base URL from environment variables
+  static String get _pineconeBaseUrl => EnvConfig.pineconeBaseUrl;
 
   /// Generate embedding using simple hash-based approach
   /// This is a fallback method when TFLite model is not available

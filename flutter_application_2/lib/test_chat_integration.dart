@@ -2,17 +2,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'embedding_service.dart';
 import 'pinecone_grok_service.dart';
+import 'config/env_config.dart';
 
 /// Test chat integration with Pinecone and Grok
 class ChatIntegrationTest {
-  static const String pineconeApiKey =
-      'pcsk_2RJN7Z_LfuY91XZUs6LpcANxFgg8MnBvMfFNKUuStinbEy68r8XuBp1sNeJpMRAU9kxGxQ';
-  static const String pineconeBaseUrl =
-      'https://hydroflow-qx0130g.svc.aped-4627-b74a.pinecone.io';
+  static String get pineconeApiKey => EnvConfig.pineconeApiKey;
+  static String get pineconeBaseUrl => EnvConfig.pineconeBaseUrl;
 
-  static const String groqApiKey =
-      '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';
-  static const String groqBaseUrl = 'https://api.groq.com/openai/v1';
+  static String get groqApiKey => EnvConfig.groqApiKey;
+  static String get groqBaseUrl => EnvConfig.groqBaseUrl;
 
   /// Test 1: Test embedding generation
   Future<bool> testEmbeddingGeneration() async {
