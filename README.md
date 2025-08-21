@@ -11,14 +11,22 @@ This is an ongoing project. Future work includes AI-driven automatic UI changes 
 
 ### Screenshots
 
-<p><em>Chat UI with streaming response</em></p>
-<img src="https://github.com/user-attachments/assets/7bdbe6a3-1cfd-462f-8b58-bfa7a5367942" alt="Hydraulic Assistant chat UI showing streaming response" width="250" height="500" />
-
-<p><em>Connectivity diagnostics and network tests</em></p>
-<img src="https://github.com/user-attachments/assets/a21fd2f6-142c-44d0-99ce-3462b32e1ba3" alt="Connectivity diagnostics and network tests screen" width="250" height="500" />
-
-<p><em>RAG-based answer with context</em></p>
-<img src="https://github.com/user-attachments/assets/1e93f91e-0ad7-4a21-9374-9404d6d319df" alt="RAG-based answer with retrieved context in chat" width="250" height="500" />
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/7bdbe6a3-1cfd-462f-8b58-bfa7a5367942" alt="Hydraulic Assistant chat UI showing streaming response" width="250" height="500" /><br/>
+      <sub>Chat UI with streaming response</sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/a21fd2f6-142c-44d0-99ce-3462b32e1ba3" alt="Connectivity diagnostics and network tests screen" width="250" height="500" /><br/>
+      <sub>Connectivity diagnostics and network tests</sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/1e93f91e-0ad7-4a21-9374-9404d6d319df" alt="RAG-based answer with retrieved context in chat" width="250" height="500" /><br/>
+      <sub>RAG-based answer with context</sub>
+    </td>
+  </tr>
+  </table>
 
 ---
 
