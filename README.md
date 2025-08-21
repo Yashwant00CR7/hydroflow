@@ -77,8 +77,9 @@ Example keys (names only; do not commit secrets):
 Ongoing development. See “Future Roadmap” for upcoming features.
 
 
-![Image](https://github.com/user-attachments/assets/7bdbe6a3-1cfd-462f-8b58-bfa7a5367942)
 
-![Image](https://github.com/user-attachments/assets/a21fd2f6-142c-44d0-99ce-3462b32e1ba3)
+<img src="https://github.com/user-attachments/assets/7bdbe6a3-1cfd-462f-8b58-bfa7a5367942" width="250" height="500" />
 
-![Image](https://github.com/user-attachments/assets/1e93f91e-0ad7-4a21-9374-9404d6d319df)
+<img src="https://github.com/user-attachments/assets/a21fd2f6-142c-44d0-99ce-3462b32e1ba3" width="250" height="500" />
+
+<img src="https://github.com/user-attachments/assets/1e93f91e-0ad7-4a21-9374-9404d6d319df" width="250" height="500" />
