@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import 'pinecone_grok_service.dart';
 import 'embedding_service.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +19,26 @@ class ChatMessage {
     required this.timestamp,
     this.isLoading = false,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'text': text,
+      'isUser': isUser,
+      'timestamp': timestamp.toIso8601String(),
+      'isLoading': isLoading,
+    };
+  }
+
+  static ChatMessage fromMap(Map<String, dynamic> map) {
+    return ChatMessage(
+      text: (map['text'] ?? '') as String,
+      isUser: (map['isUser'] ?? false) as bool,
+      timestamp:
+          DateTime.tryParse(map['timestamp'] as String? ?? '') ??
+          DateTime.now(),
+      isLoading: (map['isLoading'] ?? false) as bool,
+    );
+  }
 }
 
 class ChatPage extends StatefulWidget {
@@ -32,13 +55,56 @@ class _ChatPageState extends State<ChatPage> {
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
 
+  // Typewriter streaming state
+  int _streamingIndex = -1;
+  String _typeDisplayed = '';
+  String _typePending = '';
+  Timer? _typeTimer;
+  Timer? _cursorBlinkTimer;
+  bool _cursorVisible = true;
+  static const String _historyKey = 'chat_history_v1';
+  static const double _messageFontSize = 18.0;
+
   @override
   void initState() {
     super.initState();
-    // Add welcome message
-    _messages.add(
-      ChatMessage(
-        text: '''Welcome to Hydraulic Assistant! 🤖
+    _loadMessages();
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    _typeTimer?.cancel();
+    _cursorBlinkTimer?.cancel();
+    _saveMessages();
+    super.dispose();
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_historyKey);
+      if (raw != null && raw.isNotEmpty) {
+        final List<dynamic> list = jsonDecode(raw) as List<dynamic>;
+        final restored =
+            list
+                .map(
+                  (e) =>
+                      ChatMessage.fromMap(Map<String, dynamic>.from(e as Map)),
+                )
+                .toList();
+        if (!mounted) return;
+        setState(() {
+          _messages
+            ..clear()
+            ..addAll(restored);
+        });
+      } else {
+        setState(() {
+          _messages.add(
+            ChatMessage(
+              text: '''Welcome to Hydraulic Assistant! 🤖
 
 I'm your AI expert for all things hydraulic hose pressure and systems. I can help you with:
 
@@ -49,25 +115,54 @@ I'm your AI expert for all things hydraulic hose pressure and systems. I can hel
 • Safety standards and best practices
 
 Ask me anything about hydraulic systems!''',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ),
-    );
+              isUser: false,
+              timestamp: DateTime.now(),
+            ),
+          );
+        });
+        _saveMessages();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            text: 'Welcome to Hydraulic Assistant! 🤖',
+            isUser: false,
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    }
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
+  Future<void> _saveMessages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = _messages.map((m) => m.toMap()).toList();
+      await prefs.setString(_historyKey, jsonEncode(list));
+    } catch (_) {
+      // ignore
+    }
   }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (!_scrollController.hasClients) return;
+      final position = _scrollController.position;
+      final double distanceToBottom =
+          position.maxScrollExtent - position.pixels;
+      final bool isNearBottom = distanceToBottom <= 120.0;
+
+      if (_streamingIndex >= 0) {
+        // While streaming, avoid repeated animations; only jump when near bottom
+        if (!isNearBottom) return;
+        _scrollController.jumpTo(position.maxScrollExtent);
+      } else {
+        // For discrete events (sending/received), do a gentle animate
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
+          position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
         );
       }
@@ -85,6 +180,7 @@ Ask me anything about hydraulic systems!''',
       );
       _isLoading = true;
     });
+    _saveMessages();
     _messageController.clear();
     _scrollToBottom();
 
@@ -113,18 +209,101 @@ Ask me anything about hydraulic systems!''',
         return;
       }
 
-      // Get response from the service
-      final response = await _service.answerUserQuery(
+      // Stream response from the service incrementally with a typewriter effect
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            text: '',
+            isUser: false,
+            timestamp: DateTime.now(),
+            isLoading: true,
+          ),
+        );
+        _streamingIndex = _messages.length - 1;
+        _typeDisplayed = '';
+        _typePending = '';
+      });
+      _scrollToBottom();
+
+      // Blink a red cursor while streaming
+      _cursorBlinkTimer?.cancel();
+      _cursorBlinkTimer = Timer.periodic(const Duration(milliseconds: 500), (
+        _,
+      ) {
+        if (!mounted) return;
+        setState(() {
+          _cursorVisible = !_cursorVisible;
+        });
+      });
+
+      // Slow typewriter: add one character every ~60ms
+      _typeTimer?.cancel();
+      _typeTimer = Timer.periodic(const Duration(milliseconds: 60), (_) {
+        if (_streamingIndex < 0) return;
+        if (_typePending.isEmpty) return;
+        final nextChar = _typePending.substring(0, 1);
+        _typePending = _typePending.substring(1);
+        _typeDisplayed += nextChar;
+        setState(() {
+          final idx = _streamingIndex;
+          _messages[idx] = ChatMessage(
+            text: _typeDisplayed,
+            isUser: false,
+            timestamp: _messages[idx].timestamp,
+            isLoading: true,
+          );
+        });
+        _scrollToBottom();
+      });
+
+      final stream = _service.answerUserQueryStream(
         userQuery: message,
         embedder: EmbeddingService.getEmbeddingFunction(),
       );
 
-      setState(() {
-        _messages.add(
-          ChatMessage(text: response, isUser: false, timestamp: DateTime.now()),
-        );
-        _isLoading = false;
-      });
+      bool gotAny = false;
+
+      await for (final chunk in stream) {
+        gotAny = true;
+        _typePending += chunk;
+      }
+
+      // If nothing streamed, show a friendly fallback
+      if (!gotAny) {
+        setState(() {
+          final idx = _streamingIndex;
+          _messages[idx] = ChatMessage(
+            text:
+                'I couldn\'t get a response at the moment. Please try again in a few seconds.',
+            isUser: false,
+            timestamp: _messages[idx].timestamp,
+            isLoading: true,
+          );
+        });
+      }
+
+      // Finalize once pending buffer fully typed
+      while (_typePending.isNotEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 60));
+      }
+      _typeTimer?.cancel();
+      _cursorBlinkTimer?.cancel();
+      if (mounted) {
+        setState(() {
+          final idx = _streamingIndex;
+          if (idx >= 0 && idx < _messages.length) {
+            _messages[idx] = ChatMessage(
+              text: _typeDisplayed,
+              isUser: false,
+              timestamp: _messages[idx].timestamp,
+              isLoading: false,
+            );
+          }
+          _streamingIndex = -1;
+          _isLoading = false;
+        });
+        _saveMessages();
+      }
     } catch (e) {
       String errorMessage =
           'Sorry, I encountered an error: $e\n\nPlease try again or check your connection.';
@@ -164,6 +343,7 @@ Error details: $e''';
         );
         _isLoading = false;
       });
+      _saveMessages();
     }
     _scrollToBottom();
   }
@@ -188,74 +368,74 @@ Error details: $e''';
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.bug_report, color: Color(0xFFdc2626)),
+            icon: const Icon(Icons.delete_outline, color: Color(0xFFdc2626)),
+            tooltip: 'Clear chat history',
             onPressed: () async {
-              // Show loading dialog
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder:
-                    (context) => const AlertDialog(
-                      content: Row(
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(width: 16),
-                          Text('Testing network connectivity...'),
-                        ],
-                      ),
-                    ),
-              );
-
-              // Run network tests
-              final results = await NetworkTest.runAllTests();
-
-              // Close loading dialog
-              Navigator.pop(context);
-
-              // Show results
-              showDialog(
+              final confirmed = await showDialog<bool>(
                 context: context,
                 builder:
                     (context) => AlertDialog(
-                      title: const Text('Network Test Results'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Internet: ${results['internet'] == true ? '✅ Connected' : '❌ Failed'}',
-                          ),
-                          Text(
-                            'Pinecone: ${results['pinecone'] == true ? '✅ Connected' : '❌ Failed'}',
-                          ),
-                          Text(
-                            'Groq API: ${results['groq'] == true ? '✅ Connected' : '❌ Failed'}',
-                          ),
-                          const SizedBox(height: 16),
-                          if (results['internet'] != true)
-                            const Text(
-                              '❌ No internet connection detected. Please check your network.',
-                            ),
-                          if (results['internet'] == true &&
-                              results['pinecone'] != true)
-                            const Text(
-                              '❌ Cannot reach Pinecone API. Check your API key and endpoint.',
-                            ),
-                          if (results['internet'] == true &&
-                              results['groq'] != true)
-                            const Text(
-                              '❌ Cannot reach Groq API. Check your API key.',
-                            ),
-                        ],
+                      title: const Text('Clear Chat History'),
+                      content: const Text(
+                        'This will permanently delete your current chat history. Continue?',
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('OK'),
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text(
+                            'Clear',
+                            style: TextStyle(color: Color(0xFFdc2626)),
+                          ),
                         ),
                       ],
                     ),
               );
+
+              if (confirmed == true) {
+                _typeTimer?.cancel();
+                _cursorBlinkTimer?.cancel();
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove(_historyKey);
+                if (!mounted) return;
+                setState(() {
+                  _streamingIndex = -1;
+                  _typeDisplayed = '';
+                  _typePending = '';
+                  _isLoading = false;
+                  _messages
+                    ..clear()
+                    ..add(
+                      ChatMessage(
+                        text: '''Welcome to Hydraulic Assistant! 🤖
+
+I'm your AI expert for all things hydraulic hose pressure and systems. I can help you with:
+
+• Pressure ratings and safety factors
+• Hose selection based on your requirements  
+• Pressure calculations and formulas
+• Troubleshooting common issues
+• Safety standards and best practices
+
+Ask me anything about hydraulic systems!''',
+                        isUser: false,
+                        timestamp: DateTime.now(),
+                      ),
+                    );
+                });
+                await _saveMessages();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Chat history cleared'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                _scrollToBottom();
+              }
             },
           ),
           IconButton(
@@ -289,20 +469,9 @@ Error details: $e''';
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(16),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
+              itemCount: _messages.length,
               itemBuilder: (context, index) {
-                if (index == _messages.length) {
-                  // Loading message
-                  return _buildMessageBubble(
-                    ChatMessage(
-                      text: 'Thinking...',
-                      isUser: false,
-                      timestamp: DateTime.now(),
-                      isLoading: true,
-                    ),
-                  );
-                }
-                return _buildMessageBubble(_messages[index]);
+                return _buildMessageBubble(_messages[index], index);
               },
             ),
           ),
@@ -338,6 +507,7 @@ Error details: $e''';
                           vertical: 15,
                         ),
                       ),
+                      style: const TextStyle(fontSize: 18),
                       maxLines: null,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _sendMessage(),
@@ -365,7 +535,7 @@ Error details: $e''';
                     child: Icon(
                       _isLoading ? Icons.hourglass_empty : Icons.send,
                       color: Colors.white,
-                      size: 20,
+                      size: 22,
                     ),
                   ),
                 ),
@@ -377,7 +547,7 @@ Error details: $e''';
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message) {
+  Widget _buildMessageBubble(ChatMessage message, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -416,33 +586,24 @@ Error details: $e''';
                 ],
               ),
               child:
-                  message.isLoading
-                      ? Row(
-                        children: [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                message.isUser
-                                    ? Colors.white
-                                    : const Color(0xFFdc2626),
+                  message.isLoading &&
+                          !message.isUser &&
+                          index == _streamingIndex
+                      ? RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: const Color(0xFF1e3a8a),
+                            fontSize: _messageFontSize,
+                          ),
+                          children: [
+                            TextSpan(text: message.text),
+                            if (_cursorVisible)
+                              const TextSpan(
+                                text: ' ▍',
+                                style: TextStyle(color: Color(0xFFdc2626)),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Thinking...',
-                            style: TextStyle(
-                              color:
-                                  message.isUser
-                                      ? Colors.white
-                                      : const Color(0xFF1e3a8a),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       )
                       : Text(
                         message.text,
@@ -451,7 +612,7 @@ Error details: $e''';
                               message.isUser
                                   ? Colors.white
                                   : const Color(0xFF374151),
-                          fontSize: 14,
+                          fontSize: _messageFontSize,
                         ),
                       ),
             ),

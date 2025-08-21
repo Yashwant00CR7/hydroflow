@@ -150,6 +150,77 @@ class PineconeGrokService {
     }
   }
 
+  /// Stream tokens from Groq API (OpenAI-compatible streaming via SSE)
+  /// Yields partial content chunks as they arrive
+  Stream<String> askGroqStream({
+    required String userQuery,
+    required String context,
+  }) async* {
+    final url = Uri.parse('$groqBaseUrl/chat/completions');
+    final body = {
+      'model': 'llama3-8b-8192',
+      'messages': [
+        {
+          'role': 'system',
+          'content':
+              'You are a hydraulic engineering expert. Use the provided context to answer the user question accurately and safely.',
+        },
+        {
+          'role': 'user',
+          'content': 'Context: $context\n\nQuestion: $userQuery',
+        },
+      ],
+      'max_tokens': 1000,
+      'temperature': 0.7,
+      'stream': true,
+    };
+
+    final client = http.Client();
+    try {
+      final request = http.Request('POST', url)
+        ..headers.addAll({
+          'Authorization': 'Bearer $groqApiKey',
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        })
+        ..body = jsonEncode(body);
+
+      final streamedResponse = await client.send(request);
+
+      if (streamedResponse.statusCode != 200) {
+        final full = await streamedResponse.stream.bytesToString();
+        print('Groq stream error: ${streamedResponse.statusCode} - $full');
+        return;
+      }
+
+      final decodedStream = streamedResponse.stream.transform(utf8.decoder);
+      // Split by lines to handle SSE `data:` frames
+      await for (final chunk in decodedStream) {
+        for (final line in chunk.split('\n')) {
+          final trimmed = line.trim();
+          if (trimmed.isEmpty) continue;
+          if (!trimmed.startsWith('data:')) continue;
+          final data = trimmed.substring(5).trim();
+          if (data == '[DONE]') return;
+          try {
+            final Map<String, dynamic> json = jsonDecode(data);
+            final delta = json['choices']?[0]?['delta']?['content'];
+            if (delta is String && delta.isNotEmpty) {
+              yield delta;
+            }
+          } catch (e) {
+            // Non-JSON keep-alive or unexpected line; ignore quietly
+          }
+        }
+      }
+    } catch (e) {
+      print('Groq stream exception: $e');
+      return;
+    } finally {
+      client.close();
+    }
+  }
+
   /// Example: Full workflow for answering a user query
   /// [userQuery] - the user's question
   /// [embedder] - a function that takes a string and returns a List<double> embedding
@@ -177,6 +248,26 @@ class PineconeGrokService {
     } catch (e) {
       print('AnswerUserQuery exception: $e');
       return 'Sorry, I encountered an error while processing your request. Please try again.';
+    }
+  }
+
+  /// Streamed variant: yields response tokens incrementally
+  Stream<String> answerUserQueryStream({
+    required String userQuery,
+    required Future<List<double>> Function(String) embedder,
+  }) async* {
+    try {
+      final queryEmbedding = await embedder(userQuery);
+      final matches = await queryPinecone(queryEmbedding: queryEmbedding);
+      if (matches.isEmpty) {
+        yield "I couldn't find relevant information in my knowledge base. Please try rephrasing your question or ask about a different hydraulic topic.";
+        return;
+      }
+      final context = matches.map((m) => m['metadata']?['text'] ?? '').join('\n---\n');
+      yield* askGroqStream(userQuery: userQuery, context: context);
+    } catch (e) {
+      print('answerUserQueryStream exception: $e');
+      yield 'Sorry, I encountered an error while processing your request. Please try again.';
     }
   }
 }
