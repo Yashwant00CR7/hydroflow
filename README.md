@@ -46,7 +46,7 @@ This is an ongoing project. Future work includes AI-driven automatic UI changes 
   - **Connectivity checks**: user-friendly errors and basic network tests.
 
 ### About the Company (brief)
-We work in the hydraulics domain, focusing on reliability, safety, and operational efficiency. This assistant aims to shorten decision cycles for technicians, engineers, and support staff while reinforcing safe practices.
+This app is built for our client, Sabari Hydro Pneumatics, operating since 2010. They specialize in hydraulics and pneumatics solutions, with an emphasis on reliability, safety, and operational efficiency. The assistant helps technicians, engineers, and support staff make faster, safer decisions.
 
 ### Future Roadmap (in progress)
 - **AI-driven automatic UI**: Dynamically adapt screens based on conversation intent.
@@ -77,3 +77,8 @@ Example keys (names only; do not commit secrets):
 Ongoing development. See “Future Roadmap” for upcoming features.
 
 
+![Image](https://github.com/user-attachments/assets/7bdbe6a3-1cfd-462f-8b58-bfa7a5367942)
+
+![Image](https://github.com/user-attachments/assets/a21fd2f6-142c-44d0-99ce-3462b32e1ba3)
+
+![Image](https://github.com/user-attachments/assets/1e93f91e-0ad7-4a21-9374-9404d6d319df)
