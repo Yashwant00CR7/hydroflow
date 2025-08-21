@@ -49,6 +49,17 @@ flutter build web
 
 ---
 
+### Testing
+
+```bash
+cd flutter_application_2
+flutter test
+```
+
+Key tests live under `flutter_application_2/test/` (for example, `widget_test.dart`).
+
+---
+
 ### Firebase Integration
 
 This app initializes Firebase at startup using FlutterFire.
@@ -68,10 +79,18 @@ flutterfire configure
 
 If you change Firebase projects, re‑run the commands above to regenerate `firebase_options.dart` and platform files.
 
+Services used (from `pubspec.yaml`):
+- `firebase_core` (init)
+- `firebase_auth` (auth)
+- `cloud_firestore` (database)
+- `google_sign_in` (provider auth)
+
+---
+
 ### What’s Implemented in the AI Layer
 - **Retrieval-Augmented Generation (RAG)**:
   - Embeds user queries and retrieves relevant context from a vector database before asking the LLM.
-  - Files: `lib/pinecone_grok_service.dart`, `lib/embedding_service.dart`.
+  - Files: `flutter_application_2/lib/pinecone_grok_service.dart`, `flutter_application_2/lib/embedding_service.dart`.
 
 - **Vector Store: Pinecone**:
   - Upsert/query endpoints used via REST (`upsertToPinecone`, `queryPinecone`).
@@ -120,7 +139,7 @@ graph TD;
 Flow: the app embeds the query, retrieves context from Pinecone, then calls Groq to generate a context‑aware response streamed back to the UI.
 
 ### Flutter App Details (brief)
-- Screen: `lib/chat_page.dart`
+- Screen: `flutter_application_2/lib/chat_page.dart`
   - Stateful chat UI with message bubbles for user and AI.
   - **Streaming UI**: typewriter effect, blinking cursor, smooth autoscroll.
   - **Local storage**: chat history via `SharedPreferences`.
@@ -138,6 +157,13 @@ Flow: the app embeds the query, retrieves context from Pinecone, then calls Groq
 - **Pinecone 401/404**: Check `PINECONE_API_KEY` and `PINECONE_BASE_URL` in `.env`.
 - **Groq API errors**: Verify `GROQ_API_KEY` is valid; confirm base URL.
 - **Firebase init**: Ensure `firebase_options.dart` matches your project and platforms.
+
+---
+
+### Security
+- Do not commit secrets. Keep `.env` files out of version control (already ignored in `flutter_application_2/.gitignore`).
+- Prefer environment variables or secret managers in CI/CD.
+- Rotate keys if exposed and reconfigure immediately.
 
 ---
 
