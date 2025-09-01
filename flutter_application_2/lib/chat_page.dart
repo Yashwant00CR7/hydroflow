@@ -4,20 +4,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'pinecone_grok_service.dart';
 import 'embedding_service.dart';
+import 'config/env_config.dart';
 import 'package:http/http.dart' as http;
-import 'network_test.dart';
+import 'widgets/app_header.dart';
 
 class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
   final bool isLoading;
+  final String? id; // Added
 
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
     this.isLoading = false,
+    this.id, // Added
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +29,7 @@ class ChatMessage {
       'isUser': isUser,
       'timestamp': timestamp.toIso8601String(),
       'isLoading': isLoading,
+      'id': id, // Added
     };
   }
 
@@ -37,6 +41,7 @@ class ChatMessage {
           DateTime.tryParse(map['timestamp'] as String? ?? '') ??
           DateTime.now(),
       isLoading: (map['isLoading'] ?? false) as bool,
+      id: map['id'] as String?, // Added
     );
   }
 }
@@ -63,7 +68,7 @@ class _ChatPageState extends State<ChatPage> {
   Timer? _cursorBlinkTimer;
   bool _cursorVisible = true;
   static const String _historyKey = 'chat_history_v1';
-  static const double _messageFontSize = 18.0;
+  static const double _messageFontSize = 14.0;
 
   @override
   void initState() {
@@ -104,9 +109,9 @@ class _ChatPageState extends State<ChatPage> {
         setState(() {
           _messages.add(
             ChatMessage(
-              text: '''Welcome to Hydraulic Assistant! 🤖
+              text: """Welcome to Hydraulic Assistant! 🤖
 
-I'm your AI expert for all things hydraulic hose pressure and systems. I can help you with:
+I am your AI expert for all things hydraulic hose pressure and systems. I can help you with:
 
 • Pressure ratings and safety factors
 • Hose selection based on your requirements  
@@ -114,7 +119,7 @@ I'm your AI expert for all things hydraulic hose pressure and systems. I can hel
 • Troubleshooting common issues
 • Safety standards and best practices
 
-Ask me anything about hydraulic systems!''',
+Ask me anything about hydraulic systems!""",
               isUser: false,
               timestamp: DateTime.now(),
             ),
@@ -238,7 +243,7 @@ Ask me anything about hydraulic systems!''',
 
       // Slow typewriter: add one character every ~60ms
       _typeTimer?.cancel();
-      _typeTimer = Timer.periodic(const Duration(milliseconds: 60), (_) {
+      _typeTimer = Timer.periodic(const Duration(milliseconds: 10), (_) {
         if (_streamingIndex < 0) return;
         if (_typePending.isEmpty) return;
         final nextChar = _typePending.substring(0, 1);
@@ -265,21 +270,32 @@ Ask me anything about hydraulic systems!''',
 
       await for (final chunk in stream) {
         gotAny = true;
-        _typePending += chunk;
+        if (chunk.trim().isNotEmpty) {
+          _typePending += chunk;
+        }
+      }
+
+      // Check if we got any response for debugging
+      if (!gotAny && _typePending.isEmpty) {
+        // No response received from API
       }
 
       // If nothing streamed, show a friendly fallback
-      if (!gotAny) {
-        setState(() {
-          final idx = _streamingIndex;
-          _messages[idx] = ChatMessage(
-            text:
-                'I couldn\'t get a response at the moment. Please try again in a few seconds.',
-            isUser: false,
-            timestamp: _messages[idx].timestamp,
-            isLoading: true,
-          );
-        });
+      if (!gotAny ||
+          (_typePending.trim().isEmpty && _typeDisplayed.trim().isEmpty)) {
+        _typePending =
+            '''I apologize, but I couldn\'t generate a response at the moment. This could be due to:
+
+• Network connectivity issues
+• API service temporarily unavailable  
+• Empty knowledge base response
+
+Please try:
+• Asking a more specific hydraulic question
+• Checking your internet connection
+• Trying again in a few moments
+
+I am here to help with hydraulic systems, pressure calculations, hose selection, and safety standards!''';
       }
 
       // Finalize once pending buffer fully typed
@@ -292,8 +308,25 @@ Ask me anything about hydraulic systems!''',
         setState(() {
           final idx = _streamingIndex;
           if (idx >= 0 && idx < _messages.length) {
+            // If the final message is still empty, provide a fallback
+            String finalText = _typeDisplayed.trim();
+            if (finalText.isEmpty) {
+              finalText =
+                  '''I am having trouble generating a response right now. Let me try to help you with some common hydraulic topics:
+
+🔧 **Hydraulic Pressure**: I can help calculate working pressures, safety factors, and pressure ratings for different applications.
+
+🔧 **Hose Selection**: I can guide you in choosing the right hydraulic hose based on pressure, temperature, and fluid compatibility.
+
+🔧 **Safety Standards**: I can provide information about hydraulic safety practices and industry standards.
+
+🔧 **Troubleshooting**: I can help diagnose common hydraulic system issues.
+
+Please try asking a specific question about any of these topics!''';
+            }
+
             _messages[idx] = ChatMessage(
-              text: _typeDisplayed,
+              text: finalText,
               isUser: false,
               timestamp: _messages[idx].timestamp,
               isLoading: false,
@@ -323,7 +356,7 @@ Error details: $e''';
         errorMessage = 'Authentication error. Please check your API keys.';
       } else if (e.toString().contains('No data found')) {
         errorMessage =
-            '''I couldn't find relevant information in my knowledge base.
+            '''I could not find relevant information in my knowledge base.
 
 This might be because:
 • The question is outside my hydraulic expertise
@@ -352,25 +385,104 @@ Error details: $e''';
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text(
-          'Hydraulic Assistant',
-          style: TextStyle(
-            color: Color(0xFF1e3a8a),
-            fontWeight: FontWeight.bold,
+      body: Column(
+        children: [
+          const AppHeader(
+            title: 'AI Assistant',
+            subtitle: 'Ask questions about hydraulic systems',
+            showBackButton: true,
           ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFdc2626)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
+          Expanded(
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _buildDebugActions(),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: _buildMessageBubble(_messages[index], index),
+                      );
+                    },
+                    childCount: _messages.length,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildChatInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDebugActions() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.bug_report, color: Color(0xFFdc2626)),
+            tooltip: 'Test API Connection',
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+
+              // Show environment debug info first
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('API Debug Info'),
+                  content: SingleChildScrollView(
+                    child: Text(
+                      EnvConfig.getDebugInfo(),
+                      style: const TextStyle(fontFamily: 'monospace'),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        try {
+                          // Test Groq API directly
+                          final testResponse = await _service.testGroqConnection();
+
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Groq API Test: ${testResponse.length > 50 ? 'Working!' : testResponse}',
+                              ),
+                              duration: const Duration(seconds: 5),
+                            ),
+                          );
+                        } catch (e) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text('API Test Failed: $e'),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Test API'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Color(0xFFdc2626)),
             tooltip: 'Clear chat history',
             onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder:
@@ -410,9 +522,9 @@ Error details: $e''';
                     ..clear()
                     ..add(
                       ChatMessage(
-                        text: '''Welcome to Hydraulic Assistant! 🤖
+                        text: """Welcome to Hydraulic Assistant! 🤖
 
-I'm your AI expert for all things hydraulic hose pressure and systems. I can help you with:
+I am your AI expert for all things hydraulic hose pressure and systems. I can help you with:
 
 • Pressure ratings and safety factors
 • Hose selection based on your requirements  
@@ -420,21 +532,22 @@ I'm your AI expert for all things hydraulic hose pressure and systems. I can hel
 • Troubleshooting common issues
 • Safety standards and best practices
 
-Ask me anything about hydraulic systems!''',
+Ask me anything about hydraulic systems!""",
                         isUser: false,
                         timestamp: DateTime.now(),
                       ),
                     );
                 });
                 await _saveMessages();
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Chat history cleared'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-                _scrollToBottom();
+                if (mounted) {
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Chat history cleared'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  _scrollToBottom();
+                }
               }
             },
           ),
@@ -447,7 +560,7 @@ Ask me anything about hydraulic systems!''',
                     (context) => AlertDialog(
                       title: const Text('About Hydraulic Assistant'),
                       content: const Text(
-                        'This AI assistant specializes in hydraulic hose pressure and system knowledge. '
+                        'This AI assistant specializes in hydraulic hose pressure and system knowledge. ' 
                         'It uses advanced AI to provide accurate, safety-focused information about hydraulic systems.',
                       ),
                       actions: [
@@ -462,87 +575,65 @@ Ask me anything about hydraulic systems!''',
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Chat messages
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _buildMessageBubble(_messages[index], index);
-              },
-            ),
-          ),
-          // Input area
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: const InputDecoration(
-                        hintText: 'Ask about hydraulic hose pressure...',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                      maxLines: null,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _sendMessage(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _sendMessage,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFdc2626), Color(0xFFb91c1c)],
-                      ),
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFdc2626).withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      _isLoading ? Icons.hourglass_empty : Icons.send,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    );
+  }
+
+  Widget _buildChatInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 13),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
         ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: TextField(
+            controller: _messageController,
+            decoration: InputDecoration(
+              hintText: 'Type a message...',
+              filled: true,
+              fillColor: const Color(0xFFF0F2F5),
+              contentPadding: const EdgeInsets.symmetric(vertical: 15),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30.0),
+                borderSide: BorderSide.none,
+              ),
+              prefixIcon: IconButton(
+                icon: const Icon(Icons.attach_file_outlined, color: Colors.grey),
+                onPressed: () { /* TODO */ },
+              ),
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.mic_outlined, color: Colors.grey),
+                    onPressed: () { /* TODO */ },
+                  ),
+                  _isLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.send, color: Color(0xFFdc2626)),
+                          onPressed: _sendMessage,
+                        ),
+                ],
+              ),
+            ),
+            onSubmitted: _isLoading ? null : (_) => _sendMessage(),
+            textInputAction: TextInputAction.send,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
       ),
     );
   }
@@ -579,7 +670,7 @@ Ask me anything about hydraulic systems!''',
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha(26),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

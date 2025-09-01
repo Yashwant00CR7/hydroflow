@@ -7,39 +7,45 @@ class PineconeGrokService {
   // === CONFIGURATION ===
   // Get API keys from environment variables
   static String get pineconeApiKey => EnvConfig.pineconeApiKey;
-  static const String pineconeEnvironment = 'us-east-1'; // e.g. 'us-east1-gcp'
-  static const String pineconeIndex = 'hydroflow'; // e.g. 'hydraulic-knowledge'
+  static const String pineconeEnvironment = 'us-east-1';
+  static const String pineconeIndex = 'hydroflow';
   static String get pineconeBaseUrl => EnvConfig.pineconeBaseUrl;
 
-  // Groq API (updated from Grok)
+  // Groq API
   static String get groqApiKey => EnvConfig.groqApiKey;
   static String get groqBaseUrl => EnvConfig.groqBaseUrl;
 
-  /// Upsert (add/update) a document to Pinecone
-  /// [id] - unique id for the document
-  /// [embedding] - vector embedding of the document (List<double>)
-  /// [metadata] - any metadata (e.g. {"title": "Hose Pressure"})
-  Future<bool> upsertToPinecone({
-    required String id,
-    required List<double> embedding,
-    Map<String, dynamic>? metadata,
-  }) async {
+  /// Test Groq API connectivity with a simple request
+  Future<String> testGroqConnection() async {
     try {
-      final url = Uri.parse('$pineconeBaseUrl/vectors/upsert');
+      // First check if API key is configured
+      if (groqApiKey.isEmpty) {
+        return 'Error: Groq API key is not configured';
+      }
+
+      if (!groqApiKey.startsWith('gsk_')) {
+        return 'Error: Groq API key format appears invalid (should start with gsk_)';
+      }
+
+      // Test with a simple direct API call
+      final url = Uri.parse('$groqBaseUrl/chat/completions');
       final body = {
-        'vectors': [
+        'model': 'llama-3.1-8b-instant',
+        'messages': [
           {
-            'id': id,
-            'values': embedding,
-            if (metadata != null) 'metadata': metadata,
+            'role': 'user',
+            'content': 'What is hydraulic pressure? Answer in one sentence.',
           },
         ],
+        'max_tokens': 100,
+        'temperature': 0.3,
       };
+
       final response = await http
           .post(
             url,
             headers: {
-              'Api-Key': pineconeApiKey,
+              'Authorization': 'Bearer $groqApiKey',
               'Content-Type': 'application/json',
             },
             body: jsonEncode(body),
@@ -47,21 +53,213 @@ class PineconeGrokService {
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        return true;
+        final data = jsonDecode(response.body);
+        final content =
+            data['choices']?[0]?['message']?['content'] ?? 'No response';
+        return 'API Working! Response: $content';
       } else {
-        print(
-          'Pinecone upsert error: ${response.statusCode} - ${response.body}',
-        );
-        return false;
+        return 'API Error ${response.statusCode}: ${response.body}';
       }
     } catch (e) {
-      print('Pinecone upsert exception: $e');
-      return false;
+      return 'Connection test failed: $e';
+    }
+  }
+
+  /// Send user query and context to Groq API for a final answer
+  Future<String> askGroq({
+    required String userQuery,
+    required String context,
+  }) async {
+    try {
+      final url = Uri.parse('$groqBaseUrl/chat/completions');
+
+      // Prepare messages - keep context reasonable length
+      final truncatedContext =
+          context.length > 2000 ? '${context.substring(0, 2000)}...' : context;
+
+      // Build messages list
+      final messages = <Map<String, String>>[
+        {
+          'role': 'system',
+          'content':
+              'You are a hydraulic engineering expert. Use the provided context to answer questions accurately and safely.',
+        },
+      ];
+
+      if (truncatedContext.isNotEmpty) {
+        messages.add({'role': 'user', 'content': 'Context: $truncatedContext'});
+      }
+
+      messages.add({'role': 'user', 'content': userQuery});
+
+      final body = {
+        'model': 'llama-3.1-8b-instant',
+        'messages': messages,
+        'max_tokens': 1000,
+        'temperature': 0.7,
+        'top_p': 1.0,
+        'stream': false,
+      };
+
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Authorization': 'Bearer $groqApiKey',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 60));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['choices']?[0]?['message']?['content'] ??
+            'No answer received.';
+      } else {
+        return 'Groq API Error ${response.statusCode}: ${response.body}';
+      }
+    } catch (e) {
+      return 'Error connecting to Groq API: $e';
+    }
+  }
+
+  /// Stream tokens from Groq API (OpenAI-compatible streaming via SSE)
+  Stream<String> askGroqStream({
+    required String userQuery,
+    required String context,
+  }) async* {
+    // First try non-streaming to see if API works at all
+    try {
+      final nonStreamResponse = await askGroq(
+        userQuery: userQuery,
+        context: context,
+      );
+
+      if (nonStreamResponse.isNotEmpty &&
+          !nonStreamResponse.startsWith('Error:') &&
+          !nonStreamResponse.startsWith('Groq API Error')) {
+        // Simulate streaming by yielding the response in chunks
+        const chunkSize = 10;
+        for (int i = 0; i < nonStreamResponse.length; i += chunkSize) {
+          final end =
+              (i + chunkSize < nonStreamResponse.length)
+                  ? i + chunkSize
+                  : nonStreamResponse.length;
+          yield nonStreamResponse.substring(i, end);
+          // Small delay to simulate streaming
+          await Future.delayed(const Duration(milliseconds: 50));
+        }
+        return;
+      }
+    } catch (e) {
+      // Continue to try streaming approach
+    }
+
+    // If non-streaming failed, try actual streaming
+    final url = Uri.parse('$groqBaseUrl/chat/completions');
+
+    // Prepare messages
+    final truncatedContext =
+        context.length > 2000 ? '${context.substring(0, 2000)}...' : context;
+
+    final messages = <Map<String, String>>[
+      {
+        'role': 'system',
+        'content':
+            'You are a hydraulic engineering expert. Use the provided context to answer questions accurately and safely.',
+      },
+    ];
+
+    if (truncatedContext.isNotEmpty) {
+      messages.add({'role': 'user', 'content': 'Context: $truncatedContext'});
+    }
+
+    messages.add({'role': 'user', 'content': userQuery});
+
+    final body = {
+      'model': 'llama-3.1-8b-instant',
+      'messages': messages,
+      'max_tokens': 1000,
+      'temperature': 0.7,
+      'top_p': 1.0,
+      'stream': true,
+    };
+
+    final client = http.Client();
+    try {
+      final request =
+          http.Request('POST', url)
+            ..headers.addAll({
+              'Authorization': 'Bearer $groqApiKey',
+              'Content-Type': 'application/json',
+              'Accept': 'text/event-stream',
+            })
+            ..body = jsonEncode(body);
+
+      final streamedResponse = await client.send(request);
+
+      if (streamedResponse.statusCode != 200) {
+        final full = await streamedResponse.stream.bytesToString();
+        throw Exception(
+          'Groq API error: ${streamedResponse.statusCode} - $full',
+        );
+      }
+
+      final decodedStream = streamedResponse.stream.transform(utf8.decoder);
+      bool hasYieldedAny = false;
+
+      // Split by lines to handle SSE `data:` frames
+      await for (final chunk in decodedStream) {
+        for (final line in chunk.split('\n')) {
+          final trimmed = line.trim();
+          if (trimmed.isEmpty) continue;
+          if (!trimmed.startsWith('data:')) continue;
+          final data = trimmed.substring(5).trim();
+          if (data == '[DONE]') return;
+          try {
+            final Map<String, dynamic> json = jsonDecode(data);
+            final delta = json['choices']?[0]?['delta']?['content'];
+            if (delta is String && delta.isNotEmpty) {
+              hasYieldedAny = true;
+              yield delta;
+            }
+          } catch (e) {
+            // Non-JSON keep-alive or unexpected line; ignore quietly
+          }
+        }
+      }
+
+      // If no content was streamed, fallback to non-streaming
+      if (!hasYieldedAny) {
+        final fallbackResponse = await askGroq(
+          userQuery: userQuery,
+          context: context,
+        );
+        if (fallbackResponse.isNotEmpty) {
+          yield fallbackResponse;
+        }
+      }
+    } catch (e) {
+      // Final fallback - try non-streaming one more time
+      try {
+        final fallbackResponse = await askGroq(
+          userQuery: userQuery,
+          context: context,
+        );
+        if (fallbackResponse.isNotEmpty) {
+          yield fallbackResponse;
+        }
+      } catch (_) {
+        // Give up and let the caller handle it
+        return;
+      }
+    } finally {
+      client.close();
     }
   }
 
   /// Query Pinecone for relevant context given a user query embedding
-  /// Returns a list of matched documents (with metadata)
   Future<List<Map<String, dynamic>>> queryPinecone({
     required List<double> queryEmbedding,
     int topK = 3,
@@ -90,165 +288,120 @@ class PineconeGrokService {
         if (matches == null) return [];
         return matches.map((m) => m as Map<String, dynamic>).toList();
       } else {
-        print(
-          'Pinecone query error: ${response.statusCode} - ${response.body}',
-        );
         return [];
       }
     } catch (e) {
-      print('Pinecone query exception: $e');
       return [];
     }
   }
 
-  /// Send user query and context to Groq API for a final answer
-  /// [userQuery] - the user's question
-  /// [context] - context string retrieved from Pinecone
-  Future<String> askGroq({
-    required String userQuery,
-    required String context,
-  }) async {
-    try {
-      final url = Uri.parse('$groqBaseUrl/chat/completions');
-      final body = {
-        'model': 'llama3-8b-8192', // Groq compatible model
-        'messages': [
-          {
-            'role': 'system',
-            'content':
-                'You are a hydraulic engineering expert. Use the provided context to answer the user question accurately and safely.',
-          },
-          {
-            'role': 'user',
-            'content': 'Context: $context\n\nQuestion: $userQuery',
-          },
-        ],
-        'max_tokens': 1000,
-        'temperature': 0.7,
-      };
-      final response = await http
-          .post(
-            url,
-            headers: {
-              'Authorization': 'Bearer $groqApiKey',
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 60));
+  /// Generate fallback hydraulic responses when vector search fails
+  String _getHydraulicFallbackResponse(String userQuery) {
+    final query = userQuery.toLowerCase();
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['choices'][0]['message']['content'] ?? 'No answer.';
-      } else {
-        print('Groq API error: ${response.statusCode} - ${response.body}');
-        return 'Error: Unable to get response from Groq API (Status: ${response.statusCode}).';
-      }
-    } catch (e) {
-      print('Groq API exception: $e');
-      return 'Error: Unable to connect to Groq API. Please check your internet connection.';
+    if (query.contains('pressure')) {
+      return '''**Hydraulic Pressure Information:**
+
+• **Working Pressure**: The normal operating pressure of a hydraulic system, typically 70-80% of the system's maximum rated pressure.
+
+• **Burst Pressure**: The pressure at which a hose or component will fail catastrophically. Usually 4x the working pressure.
+
+• **Safety Factor**: Always use components rated well above your working pressure. A 4:1 safety factor is standard.
+
+• **Pressure Drop**: Consider pressure losses through fittings, valves, and hose length when sizing your system.
+
+**Common Working Pressures:**
+- Low pressure: 0-1,000 PSI
+- Medium pressure: 1,000-3,000 PSI  
+- High pressure: 3,000+ PSI
+
+Would you like specific calculations or more details about any of these topics?''';
     }
-  }
 
-  /// Stream tokens from Groq API (OpenAI-compatible streaming via SSE)
-  /// Yields partial content chunks as they arrive
-  Stream<String> askGroqStream({
-    required String userQuery,
-    required String context,
-  }) async* {
-    final url = Uri.parse('$groqBaseUrl/chat/completions');
-    final body = {
-      'model': 'llama3-8b-8192',
-      'messages': [
-        {
-          'role': 'system',
-          'content':
-              'You are a hydraulic engineering expert. Use the provided context to answer the user question accurately and safely.',
-        },
-        {
-          'role': 'user',
-          'content': 'Context: $context\n\nQuestion: $userQuery',
-        },
-      ],
-      'max_tokens': 1000,
-      'temperature': 0.7,
-      'stream': true,
-    };
+    if (query.contains('hose') || query.contains('selection')) {
+      return '''**Hydraulic Hose Selection Guide:**
 
-    final client = http.Client();
-    try {
-      final request = http.Request('POST', url)
-        ..headers.addAll({
-          'Authorization': 'Bearer $groqApiKey',
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-        })
-        ..body = jsonEncode(body);
+**Key Factors to Consider:**
+• **Pressure Rating**: Must exceed your system's working pressure
+• **Temperature Range**: Consider both fluid and ambient temperatures
+• **Fluid Compatibility**: Ensure hose material is compatible with your hydraulic fluid
+• **Bend Radius**: Minimum bend radius to prevent kinking
+• **Abrasion Resistance**: For harsh environments
 
-      final streamedResponse = await client.send(request);
+**Common Hose Types:**
+• **SAE 100R1**: Single wire braid, up to 3,000 PSI
+• **SAE 100R2**: Double wire braid, up to 5,000 PSI
+• **SAE 100R12**: Four spiral wire, up to 5,000 PSI
 
-      if (streamedResponse.statusCode != 200) {
-        final full = await streamedResponse.stream.bytesToString();
-        print('Groq stream error: ${streamedResponse.statusCode} - $full');
-        return;
-      }
+**Installation Tips:**
+- Avoid sharp bends and twisting
+- Use proper fittings and crimping
+- Allow for thermal expansion
+- Protect from abrasion
 
-      final decodedStream = streamedResponse.stream.transform(utf8.decoder);
-      // Split by lines to handle SSE `data:` frames
-      await for (final chunk in decodedStream) {
-        for (final line in chunk.split('\n')) {
-          final trimmed = line.trim();
-          if (trimmed.isEmpty) continue;
-          if (!trimmed.startsWith('data:')) continue;
-          final data = trimmed.substring(5).trim();
-          if (data == '[DONE]') return;
-          try {
-            final Map<String, dynamic> json = jsonDecode(data);
-            final delta = json['choices']?[0]?['delta']?['content'];
-            if (delta is String && delta.isNotEmpty) {
-              yield delta;
-            }
-          } catch (e) {
-            // Non-JSON keep-alive or unexpected line; ignore quietly
-          }
-        }
-      }
-    } catch (e) {
-      print('Groq stream exception: $e');
-      return;
-    } finally {
-      client.close();
+Need help selecting a specific hose for your application?''';
     }
-  }
 
-  /// Example: Full workflow for answering a user query
-  /// [userQuery] - the user's question
-  /// [embedder] - a function that takes a string and returns a List<double> embedding
-  Future<String> answerUserQuery({
-    required String userQuery,
-    required Future<List<double>> Function(String) embedder,
-  }) async {
-    try {
-      // 1. Embed the user query
-      final queryEmbedding = await embedder(userQuery);
+    if (query.contains('safety') || query.contains('standard')) {
+      return '''**Hydraulic Safety Standards & Best Practices:**
 
-      // 2. Query Pinecone for relevant context
-      final matches = await queryPinecone(queryEmbedding: queryEmbedding);
+**Personal Safety:**
+• Always depressurize systems before maintenance
+• Wear safety glasses and protective clothing
+• Never use your hand to check for leaks - use cardboard
+• Be aware of injection hazards from high-pressure leaks
 
-      if (matches.isEmpty) {
-        return 'I couldn\'t find relevant information in my knowledge base. Please try rephrasing your question or ask about a different hydraulic topic.';
-      }
+**System Safety:**
+• Install pressure relief valves
+• Use proper lockout/tagout procedures
+• Regular inspection of hoses and fittings
+• Maintain proper fluid cleanliness levels
 
-      final context = matches
-          .map((m) => m['metadata']?['text'] ?? '')
-          .join('\n---\n');
+**Industry Standards:**
+• **ISO 4413**: General rules for hydraulic systems
+• **SAE J517**: Hydraulic hose standards
+• **NFPA/T3.20.97**: Cleanliness standard for hydraulic fluids
 
-      // 3. Ask Groq with the context
-      return await askGroq(userQuery: userQuery, context: context);
-    } catch (e) {
-      print('AnswerUserQuery exception: $e');
-      return 'Sorry, I encountered an error while processing your request. Please try again.';
+**Maintenance Schedule:**
+- Daily: Visual inspection
+- Weekly: Check fluid levels and filters
+- Monthly: Pressure testing
+- Annually: Complete system inspection
+
+What specific safety aspect would you like to know more about?''';
     }
+
+    // General hydraulic response
+    return '''**Hydraulic Systems Information:**
+
+I can help you with various hydraulic topics:
+
+🔧 **Pressure Systems**
+- Working pressure calculations
+- Safety factors and ratings
+- Pressure drop analysis
+
+🔧 **Component Selection**  
+- Hydraulic hoses and fittings
+- Pumps, valves, and cylinders
+- Filtration systems
+
+🔧 **System Design**
+- Circuit design principles
+- Flow rate calculations
+- Efficiency optimization
+
+🔧 **Maintenance & Safety**
+- Preventive maintenance schedules
+- Safety procedures and standards
+- Troubleshooting common issues
+
+🔧 **Fluid Management**
+- Hydraulic fluid selection
+- Contamination control
+- Temperature management
+
+Please ask me a specific question about any of these hydraulic topics, and I'll provide detailed information to help you!''';
   }
 
   /// Streamed variant: yields response tokens incrementally
@@ -257,23 +410,45 @@ class PineconeGrokService {
     required Future<List<double>> Function(String) embedder,
   }) async* {
     try {
-      final queryEmbedding = await embedder(userQuery);
-      final matches = await queryPinecone(queryEmbedding: queryEmbedding);
-      if (matches.isEmpty) {
-        yield "I couldn't find relevant information in my knowledge base. Please try rephrasing your question or ask about a different hydraulic topic.";
+      // Check if API keys are configured
+      if (groqApiKey.isEmpty) {
+        yield _getHydraulicFallbackResponse(userQuery);
         return;
       }
-      final context = matches.map((m) => m['metadata']?['text'] ?? '').join('\n---\n');
+
+      final queryEmbedding = await embedder(userQuery);
+      final matches = await queryPinecone(queryEmbedding: queryEmbedding);
+
+      if (matches.isEmpty) {
+        // Provide helpful hydraulic information even without vector matches
+        yield _getHydraulicFallbackResponse(userQuery);
+        return;
+      }
+
+      final context = matches
+          .map((m) => m['metadata']?['text'] ?? '')
+          .where((text) => text.isNotEmpty)
+          .join('\n---\n');
+
+      if (context.trim().isEmpty) {
+        yield _getHydraulicFallbackResponse(userQuery);
+        return;
+      }
+
       yield* askGroqStream(userQuery: userQuery, context: context);
     } catch (e) {
-      print('answerUserQueryStream exception: $e');
-      yield 'Sorry, I encountered an error while processing your request. Please try again.';
+      yield '''I encountered an error while processing your request. This might be due to:
+
+• Network connectivity issues
+• API service temporarily unavailable
+• Configuration problems
+
+Please try:
+• Checking your internet connection
+• Asking a simpler hydraulic question
+• Trying again in a few moments
+
+I'm here to help with hydraulic systems, pressure calculations, and safety standards!''';
     }
   }
 }
-
-// NOTE:
-// - You must provide a function to embed text (e.g. using OpenAI, Cohere, or other embedding API)
-// - Pinecone does not have a native Dart SDK, so this uses the REST API
-// - Fill in your Pinecone API key, environment, and index above
-// - This service is ready to be used in your Flutter app or called from a backend

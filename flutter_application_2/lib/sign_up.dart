@@ -67,14 +67,16 @@ class _SignUpPageState extends State<SignUpPage> {
             'lastLogin': FieldValue.serverTimestamp(),
           });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account created successfully')),
+        );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message = 'Sign up failed';
       if (e.code == 'weak-password') {
@@ -84,13 +86,17 @@ class _SignUpPageState extends State<SignUpPage> {
       } else if (e.code == 'invalid-email') {
         message = 'The email address is invalid.';
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign up failed: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign up failed: ${e.toString()}')),
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -99,26 +105,26 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _signUpWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      print('Starting Google Sign-Up process...');
+      // Debug: Starting Google Sign-Up process...
 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        print('User cancelled Google Sign-Up');
+        // Debug: User cancelled Google Sign-Up
         setState(() => _isLoading = false);
         return;
       }
 
-      print('Google Sign-Up successful, getting authentication...');
+      // Debug: Google Sign-Up successful, getting authentication...
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      print('Creating Firebase credential...');
+      // Debug: Creating Firebase credential...
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      print('Signing up to Firebase...');
+      // Debug: Signing up to Firebase...
       final userCredential = await FirebaseAuth.instance.signInWithCredential(
         credential,
       );
@@ -137,17 +143,19 @@ class _SignUpPageState extends State<SignUpPage> {
             'googleSignIn': true,
           });
 
-      print('Firebase sign-up successful');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Sign-Up successful')),
-      );
+      // Debug: Firebase sign-up successful
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google Sign-Up successful')),
+        );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
-      print('FirebaseAuthException: ${e.code} - ${e.message}');
+      // Debug: FirebaseAuthException: ${e.code} - ${e.message}
       String message = 'Google Sign-Up failed';
       if (e.code == 'account-exists-with-different-credential') {
         message =
@@ -167,14 +175,18 @@ class _SignUpPageState extends State<SignUpPage> {
       } else if (e.code == 'invalid-verification-id') {
         message = 'Invalid verification ID.';
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
     } catch (e) {
-      print('General Exception: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google Sign-Up failed: ${e.toString()}')),
-      );
+      // Debug: General Exception: $e
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Sign-Up failed: ${e.toString()}')),
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -240,20 +252,20 @@ class _SignUpPageState extends State<SignUpPage> {
                                 vertical: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withAlpha(230),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withAlpha(153),
                                   width: 1,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withAlpha(51),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
                                   BoxShadow(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withAlpha(26),
                                     blurRadius: 10,
                                     offset: const Offset(0, -2),
                                   ),
@@ -308,20 +320,20 @@ class _SignUpPageState extends State<SignUpPage> {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withAlpha(217),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withAlpha(153),
                                 width: 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withAlpha(77),
                                   blurRadius: 30,
                                   offset: const Offset(0, 15),
                                 ),
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withAlpha(26),
                                   blurRadius: 15,
                                   offset: const Offset(0, -3),
                                 ),
@@ -339,7 +351,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
+                                const Text(
                                   "Fill in your details to get started",
                                   style: TextStyle(
                                     fontSize: 14,
@@ -351,15 +363,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 // Name Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(
+                                        102,
+                                      ),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(
+                                          13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -390,15 +406,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 // Email Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(
+                                        102,
+                                      ),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(
+                                          13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -430,15 +450,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 // Company Name Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(
+                                        102,
+                                      ),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(
+                                          13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -469,15 +493,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 // Company Location Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(
+                                        102,
+                                      ),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(
+                                          13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -508,15 +536,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 // Password Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(
+                                        102,
+                                      ),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(
+                                          13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -562,15 +594,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 // Confirm Password Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(
+                                        102,
+                                      ),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(
+                                          13,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -640,7 +676,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Expanded(
+                                    const Expanded(
                                       child: Text(
                                         "I agree to the Terms and Conditions",
                                         style: TextStyle(
@@ -665,19 +701,23 @@ class _SignUpPageState extends State<SignUpPage> {
                                     ),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withAlpha(
+                                        77,
+                                      ),
                                       width: 1,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(
                                           0xFFdc2626,
-                                        ).withOpacity(0.4),
+                                        ).withAlpha(102),
                                         blurRadius: 15,
                                         offset: const Offset(0, 8),
                                       ),
                                       BoxShadow(
-                                        color: Colors.white.withOpacity(0.1),
+                                        color: Colors.white.withAlpha(
+                                          26,
+                                        ),
                                         blurRadius: 5,
                                         offset: const Offset(0, -2),
                                       ),
@@ -720,7 +760,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                     Expanded(
                                       child: Container(
                                         height: 1,
-                                        color: Colors.grey.withOpacity(0.3),
+                                        color: Colors.grey.withAlpha(
+                                          77,
+                                        ),
                                       ),
                                     ),
                                     Padding(
@@ -739,7 +781,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                     Expanded(
                                       child: Container(
                                         height: 1,
-                                        color: Colors.grey.withOpacity(0.3),
+                                        color: Colors.grey.withAlpha(
+                                          77,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -751,15 +795,17 @@ class _SignUpPageState extends State<SignUpPage> {
                                   width: double.infinity,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withAlpha(230),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.grey.withOpacity(0.3),
+                                      color: Colors.grey.withAlpha(77),
                                       width: 1,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withAlpha(
+                                          26,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -780,7 +826,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       height: 20,
                                       width: 20,
                                     ),
-                                    label: Text(
+                                    label: const Text(
                                       'Sign up with Google',
                                       style: TextStyle(
                                         fontSize: 16,
@@ -799,12 +845,12 @@ class _SignUpPageState extends State<SignUpPage> {
                                       Navigator.pop(context);
                                     },
                                     child: RichText(
-                                      text: TextSpan(
+                                      text: const TextSpan(
                                         text: "Already have an account? ",
                                         style: TextStyle(
                                           color: Color(0xFF4b5563),
                                         ),
-                                        children: const [
+                                        children: [
                                           TextSpan(
                                             text: "Sign In",
                                             style: TextStyle(
@@ -831,20 +877,20 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withAlpha(230),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withAlpha(179),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withAlpha(51),
                             blurRadius: 15,
                             offset: const Offset(0, 6),
                           ),
                           BoxShadow(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withAlpha(26),
                             blurRadius: 8,
                             offset: const Offset(0, -2),
                           ),

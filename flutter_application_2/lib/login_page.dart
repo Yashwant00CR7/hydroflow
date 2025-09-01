@@ -24,20 +24,21 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     setState(() => _isLoading = true);
     try {
-      final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-          );
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login successful')));
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Login successful')));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message = 'Login failed';
       if (e.code == 'user-not-found') {
@@ -45,9 +46,11 @@ class _LoginPageState extends State<LoginPage> {
       } else if (e.code == 'wrong-password') {
         message = 'Wrong password provided.';
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -56,43 +59,41 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      print('Starting Google Sign-In process...'); // Debug log
+      // Debug: Starting Google Sign-In process... // Debug log
 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        print('User cancelled Google Sign-In'); // Debug log
+        // Debug: User cancelled Google Sign-In // Debug log
         setState(() => _isLoading = false);
         return;
       }
 
-      print(
-        'Google Sign-In successful, getting authentication...',
-      ); // Debug log
+      // Debug: Google Sign-In successful, getting authentication...
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      print('Creating Firebase credential...'); // Debug log
+      // Debug: Creating Firebase credential... // Debug log
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      print('Signing in to Firebase...'); // Debug log
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
+      // Debug: Signing in to Firebase... // Debug log
+      await FirebaseAuth.instance.signInWithCredential(credential);
 
-      print('Firebase sign-in successful'); // Debug log
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Sign-In successful')),
-      );
+      // Debug: Firebase sign-in successful // Debug log
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google Sign-In successful')),
+        );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
-      print('FirebaseAuthException: ${e.code} - ${e.message}'); // Debug log
+      // Debug: FirebaseAuthException: ${e.code} - ${e.message} // Debug log
       String message = 'Google Sign-In failed';
       if (e.code == 'account-exists-with-different-credential') {
         message =
@@ -112,14 +113,18 @@ class _LoginPageState extends State<LoginPage> {
       } else if (e.code == 'invalid-verification-id') {
         message = 'Invalid verification ID.';
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
     } catch (e) {
-      print('General Exception: $e'); // Debug log
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google Sign-In failed: ${e.toString()}')),
-      );
+      // Debug: General Exception: $e // Debug log
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Sign-In failed: ${e.toString()}')),
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -161,20 +166,20 @@ class _LoginPageState extends State<LoginPage> {
                                 vertical: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withAlpha(230),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withAlpha(153),
                                   width: 1,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withAlpha(51),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
                                   BoxShadow(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withAlpha(26),
                                     blurRadius: 10,
                                     offset: const Offset(0, -2),
                                   ),
@@ -195,8 +200,7 @@ class _LoginPageState extends State<LoginPage> {
                                   const SizedBox(width: 8),
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: const [
                                       Text(
                                         'HYDRO',
@@ -229,20 +233,20 @@ class _LoginPageState extends State<LoginPage> {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withAlpha(217),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withAlpha(153),
                                 width: 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withAlpha(77),
                                   blurRadius: 30,
                                   offset: const Offset(0, 15),
                                 ),
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withAlpha(26),
                                   blurRadius: 15,
                                   offset: const Offset(0, -3),
                                 ),
@@ -272,15 +276,15 @@ class _LoginPageState extends State<LoginPage> {
                                 // Email Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(102),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(13),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -312,15 +316,15 @@ class _LoginPageState extends State<LoginPage> {
                                 // Password Field
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withAlpha(102),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withAlpha(13),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -435,19 +439,19 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withAlpha(77),
                                       width: 1,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(
                                           0xFFdc2626,
-                                        ).withOpacity(0.4),
+                                        ).withAlpha(102),
                                         blurRadius: 15,
                                         offset: const Offset(0, 8),
                                       ),
                                       BoxShadow(
-                                        color: Colors.white.withOpacity(0.1),
+                                        color: Colors.white.withAlpha(26),
                                         blurRadius: 5,
                                         offset: const Offset(0, -2),
                                       ),
@@ -490,7 +494,7 @@ class _LoginPageState extends State<LoginPage> {
                                     Expanded(
                                       child: Container(
                                         height: 1,
-                                        color: Colors.grey.withOpacity(0.3),
+                                        color: Colors.grey.withAlpha(77),
                                       ),
                                     ),
                                     Padding(
@@ -509,7 +513,7 @@ class _LoginPageState extends State<LoginPage> {
                                     Expanded(
                                       child: Container(
                                         height: 1,
-                                        color: Colors.grey.withOpacity(0.3),
+                                        color: Colors.grey.withAlpha(77),
                                       ),
                                     ),
                                   ],
@@ -521,15 +525,15 @@ class _LoginPageState extends State<LoginPage> {
                                   width: double.infinity,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withAlpha(230),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.grey.withOpacity(0.3),
+                                      color: Colors.grey.withAlpha(77),
                                       width: 1,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withAlpha(26),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -606,20 +610,20 @@ class _LoginPageState extends State<LoginPage> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withAlpha(230),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withAlpha(179),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withAlpha(51),
                             blurRadius: 15,
                             offset: const Offset(0, 6),
                           ),
                           BoxShadow(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withAlpha(26),
                             blurRadius: 8,
                             offset: const Offset(0, -2),
                           ),

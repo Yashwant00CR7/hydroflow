@@ -10,7 +10,7 @@ class NetworkTest {
           .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
-      print('Internet connection test failed: $e');
+      // Debug: Internet connection test failed: $e
       return false;
     }
   }
@@ -26,10 +26,12 @@ class NetworkTest {
           )
           .timeout(const Duration(seconds: 10));
 
-      print('Pinecone test response: ${response.statusCode}');
-      return true; // If we get any response, the endpoint is reachable
+      // Debug: Pinecone test response: ${response.statusCode}
+      // Check if response is successful
+      return response.statusCode <
+          500; // If we get any response, the endpoint is reachable
     } catch (e) {
-      print('Pinecone connection test failed: $e');
+      // Debug: Pinecone connection test failed: $e
       return false;
     }
   }
@@ -44,10 +46,10 @@ class NetworkTest {
           )
           .timeout(const Duration(seconds: 10));
 
-      print('Groq test response: ${response.statusCode}');
+      // Debug: Groq test response: ${response.statusCode}
       return response.statusCode == 200;
     } catch (e) {
-      print('Groq connection test failed: $e');
+      // Debug: Groq connection test failed: $e
       return false;
     }
   }

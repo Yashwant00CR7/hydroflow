@@ -15,19 +15,19 @@ class ChatIntegrationTest {
   /// Test 1: Test embedding generation
   Future<bool> testEmbeddingGeneration() async {
     try {
-      print('🔍 Testing embedding generation...');
+      // Debug: 🔍 Testing embedding generation...
 
       final testText = 'What is hydraulic pressure?';
       final embedding = await EmbeddingService.generateApiEmbedding(testText);
 
-      print('✅ Embedding generated successfully!');
-      print('📝 Text: $testText');
-      print('📊 Embedding dimension: ${embedding.length}');
-      print('📊 Embedding sample: ${embedding.take(5).toList()}');
+      // Debug: ✅ Embedding generated successfully!
+      // Debug: 📝 Text: $testText
+      // Debug: 📊 Embedding dimension: ${embedding.length}
+      // Debug: 📊 Embedding sample: ${embedding.take(5).toList()}
 
       return embedding.length == 384;
     } catch (e) {
-      print('❌ Embedding generation failed: $e');
+      // Debug: ❌ Embedding generation failed: $e
       return false;
     }
   }
@@ -35,7 +35,7 @@ class ChatIntegrationTest {
   /// Test 2: Test Pinecone query with embedding
   Future<bool> testPineconeQuery() async {
     try {
-      print('🔍 Testing Pinecone query with embedding...');
+      // Debug: 🔍 Testing Pinecone query with embedding...
 
       final testText = 'hydraulic pressure hose';
       final embedding = await EmbeddingService.generateApiEmbedding(testText);
@@ -55,14 +55,14 @@ class ChatIntegrationTest {
           )
           .timeout(const Duration(seconds: 30));
 
-      print('🔍 Query response status: ${response.statusCode}');
+      // Debug: 🔍 Query response status: ${response.statusCode}
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final matches = data['matches'] as List<dynamic>? ?? [];
 
-        print('✅ Pinecone query successful!');
-        print('📊 Found ${matches.length} matches');
+        // Debug: ✅ Pinecone query successful!
+        // Debug: 📊 Found ${matches.length} matches
 
         for (int i = 0; i < matches.length; i++) {
           final match = matches[i];
@@ -70,21 +70,19 @@ class ChatIntegrationTest {
           final metadata = match['metadata'] ?? {};
           final text = metadata['text'] ?? 'No text';
 
-          print('   Match ${i + 1}: Score=${score.toStringAsFixed(3)}');
-          print(
-            '   Text: ${text.substring(0, text.length > 100 ? 100 : text.length)}...',
-          );
+          // Debug:    Match ${i + 1}: Score=${score.toStringAsFixed(3)}
+          // Debug: Text: ${text.substring(0, text.length > 100 ? 100 : text.length)}...
+          assert(score >= 0, 'Score should be non-negative');
+          assert(text.isNotEmpty, 'Text should not be empty');
         }
 
         return matches.isNotEmpty;
       } else {
-        print(
-          '❌ Pinecone query failed: ${response.statusCode} - ${response.body}',
-        );
+        // Debug: ❌ Pinecone query failed: ${response.statusCode} - ${response.body}
         return false;
       }
     } catch (e) {
-      print('❌ Pinecone query exception: $e');
+      // Debug: ❌ Pinecone query exception: $e
       return false;
     }
   }
@@ -92,11 +90,11 @@ class ChatIntegrationTest {
   /// Test 3: Test Groq API
   Future<bool> testGroqApi() async {
     try {
-      print('🔍 Testing Groq API...');
+      // Debug: 🔍 Testing Groq API...
 
       final url = Uri.parse('$groqBaseUrl/chat/completions');
       final body = {
-        'model': 'llama3-8b-8192', // Groq compatible model
+        'model': 'llama-3.1-8b-instant', // Groq compatible model
         'messages': [
           {
             'role': 'user',
@@ -121,17 +119,16 @@ class ChatIntegrationTest {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final content = data['choices'][0]['message']['content'] ?? '';
-        print('✅ Groq API test successful!');
-        print('📝 Response: $content');
+        // Debug: ✅ Groq API test successful!
+        // Debug: 📝 Response: $content
+        assert(content.isNotEmpty, 'Content should not be empty');
         return true;
       } else {
-        print(
-          '❌ Groq API test failed: ${response.statusCode} - ${response.body}',
-        );
+        // Debug: ❌ Groq API test failed: ${response.statusCode} - ${response.body}
         return false;
       }
     } catch (e) {
-      print('❌ Groq API test exception: $e');
+      // Debug: ❌ Groq API test exception: $e
       return false;
     }
   }
@@ -139,55 +136,57 @@ class ChatIntegrationTest {
   /// Test 4: Full integration test
   Future<bool> testFullIntegration() async {
     try {
-      print('🔍 Testing full chat integration...');
+      // Debug: 🔍 Testing full chat integration...
 
       final service = PineconeGrokService();
       final testQuestion = 'What is hydraulic pressure?';
 
-      print('📝 Test question: $testQuestion');
+      // Debug: 📝 Test question: $testQuestion
 
-      final response = await service.answerUserQuery(
+      String response = '';
+      await for (final chunk in service.answerUserQueryStream(
         userQuery: testQuestion,
         embedder: EmbeddingService.getEmbeddingFunction(),
-      );
+      )) {
+        response += chunk;
+      }
 
-      print('✅ Full integration test successful!');
-      print('📝 Response: $response');
+      // Debug: ✅ Full integration test successful!
+      // Debug: 📝 Response: $response
 
       return !response.contains('Error') && !response.contains('Sorry');
     } catch (e) {
-      print('❌ Full integration test exception: $e');
+      // Debug: ❌ Full integration test exception: $e
       return false;
     }
   }
 
   /// Run all tests
   Future<void> runAllTests() async {
-    print('🚀 Starting chat integration tests...\n');
-
+    // Debug: 🚀 Starting chat integration tests...\n
     final embeddingOk = await testEmbeddingGeneration();
-    print('');
+    // print('');
 
     final pineconeOk = await testPineconeQuery();
-    print('');
+    // print('');
 
     final groqOk = await testGroqApi();
-    print('');
+    // print('');
 
     final integrationOk = await testFullIntegration();
-    print('');
+    // print('');
 
-    print('📊 Chat Integration Test Summary:');
-    print('   Embedding Generation: ${embeddingOk ? "✅ PASS" : "❌ FAIL"}');
-    print('   Pinecone Query: ${pineconeOk ? "✅ PASS" : "❌ FAIL"}');
-    print('   Groq API: ${groqOk ? "✅ PASS" : "❌ FAIL"}');
-    print('   Full Integration: ${integrationOk ? "✅ PASS" : "❌ FAIL"}');
+    // Debug: 📊 Chat Integration Test Summary:
+    // Debug:    Embedding Generation: ${embeddingOk ? "✅ PASS" : "❌ FAIL"}
+    // Debug:    Pinecone Query: ${pineconeOk ? "✅ PASS" : "❌ FAIL"}
+    // Debug:    Groq API: ${groqOk ? "✅ PASS" : "❌ FAIL"}
+    // Debug:    Full Integration: ${integrationOk ? "✅ PASS" : "❌ FAIL"}
 
     if (embeddingOk && pineconeOk && groqOk && integrationOk) {
-      print('\n🎉 All tests passed! Your chatbot is ready to use!');
-      print('💡 You can now use the chat page in your Flutter app.');
+      // Debug: \n🎉 All tests passed! Your chatbot is ready to use!
+      // Debug: 💡 You can now use the chat page in your Flutter app.
     } else {
-      print('\n⚠️ Some tests failed. Please check the configuration.');
+      // Debug: \n⚠️ Some tests failed. Please check the configuration.
     }
   }
 }

@@ -38,10 +38,19 @@ class EnvConfig {
     return requiredVars.every((var_) => var_.isNotEmpty);
   }
 
+  /// Get debug info about loaded environment variables
+  static String getDebugInfo() {
+    return '''Environment Configuration:
+PINECONE_API_KEY: ${pineconeApiKey.isNotEmpty ? 'LOADED (${pineconeApiKey.length} chars)' : 'NOT FOUND'}
+PINECONE_BASE_URL: ${pineconeBaseUrl.isNotEmpty ? 'LOADED' : 'NOT FOUND'}
+GROQ_API_KEY: ${groqApiKey.isNotEmpty ? 'LOADED (${groqApiKey.length} chars)' : 'NOT FOUND'}
+GROQ_BASE_URL: ${groqBaseUrl.isNotEmpty ? 'LOADED' : 'NOT FOUND'}''';
+  }
+
   /// Print environment variables for debugging (remove in production)
   static void debugPrint() {
-    print('🔧 Environment Configuration:');
-    print('PINECONE_API_KEY: ${pineconeApiKey.isNotEmpty ? '***LOADED***' : 'NOT FOUND'}');
-    print('PINECONE_BASE_URL: ${pineconeBaseUrl.isNotEmpty ? '***LOADED***' : 'NOT FOUND'}');
+    // Debug: 🔧 Environment Configuration:
+    // print('PINECONE_API_KEY: ${pineconeApiKey.isNotEmpty ? '***LOADED***' : 'NOT FOUND'}');
+    // print('PINECONE_BASE_URL: ${pineconeBaseUrl.isNotEmpty ? '***LOADED***' : 'NOT FOUND'}');
   }
 }
