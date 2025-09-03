@@ -14,11 +14,11 @@ class AppTheme {
         primary: AppColors.primaryBlue,
         secondary: AppColors.primaryRed,
         surface: AppColors.neutral50,
-        
+
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: AppColors.neutral900,
-        
+
         error: AppColors.error,
         onError: Colors.white,
       ),
@@ -121,7 +121,7 @@ class AppTheme {
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.neutral100,
-        selectedColor: AppColors.primaryBlue.withValues(alpha: 51),
+        selectedColor: AppColors.primaryBlue.withAlpha(51),
         labelStyle: AppTypography.labelMedium.copyWith(
           color: AppColors.neutral800,
         ),
@@ -158,17 +158,33 @@ class AppTheme {
           color: AppColors.neutral600,
         ),
       ),
-      
+
       // Text Theme
       textTheme: TextTheme(
-        displayLarge: AppTypography.display1.copyWith(color: AppColors.neutral900),
-        displayMedium: AppTypography.display2.copyWith(color: AppColors.neutral900),
-        headlineMedium: AppTypography.heading2.copyWith(color: AppColors.neutral800),
-        headlineSmall: AppTypography.heading3.copyWith(color: AppColors.neutral800),
-        titleLarge: AppTypography.heading1.copyWith(color: AppColors.neutral800),
-        bodyLarge: AppTypography.bodyLarge.copyWith(color: AppColors.neutral700),
-        bodyMedium: AppTypography.bodyMedium.copyWith(color: AppColors.neutral600),
-        labelLarge: AppTypography.labelLarge.copyWith(color: AppColors.neutral700),
+        displayLarge: AppTypography.display1.copyWith(
+          color: AppColors.neutral900,
+        ),
+        displayMedium: AppTypography.display2.copyWith(
+          color: AppColors.neutral900,
+        ),
+        headlineMedium: AppTypography.heading2.copyWith(
+          color: AppColors.neutral800,
+        ),
+        headlineSmall: AppTypography.heading3.copyWith(
+          color: AppColors.neutral800,
+        ),
+        titleLarge: AppTypography.heading1.copyWith(
+          color: AppColors.neutral800,
+        ),
+        bodyLarge: AppTypography.bodyLarge.copyWith(
+          color: AppColors.neutral700,
+        ),
+        bodyMedium: AppTypography.bodyMedium.copyWith(
+          color: AppColors.neutral600,
+        ),
+        labelLarge: AppTypography.labelLarge.copyWith(
+          color: AppColors.neutral700,
+        ),
       ),
     );
   }
@@ -181,11 +197,11 @@ class AppTheme {
         primary: AppColors.techGreen,
         secondary: AppColors.techGreen,
         surface: AppColors.darkNeutral50,
-        
+
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onSurface: AppColors.darkNeutral900,
-        
+
         error: AppColors.error,
         onError: Colors.white,
       ),
@@ -205,11 +221,14 @@ class AppTheme {
 
       // Card Theme
       cardTheme: CardTheme(
-        color: AppColors.darkNeutral100.withValues(alpha: 204),
+        color: AppColors.darkNeutral100.withAlpha(204),
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
-          side: BorderSide(color: AppColors.darkNeutral300.withValues(alpha: 128), width: 1),
+          side: BorderSide(
+            color: AppColors.darkNeutral300.withAlpha(128),
+            width: 1,
+          ),
         ),
         margin: const EdgeInsets.all(AppSpacing.marginSM),
       ),
@@ -233,7 +252,7 @@ class AppTheme {
           ),
           textStyle: WidgetStateProperty.all(AppTypography.buttonMedium),
           shadowColor: WidgetStateProperty.all(AppColors.techGreen),
-          overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 51)),
+          overlayColor: WidgetStateProperty.all(Colors.white.withAlpha(51)),
         ),
       ),
 
@@ -255,7 +274,9 @@ class AppTheme {
         fillColor: AppColors.darkNeutral200,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
-          borderSide: BorderSide(color: AppColors.darkNeutral300.withValues(alpha: 128)),
+          borderSide: BorderSide(
+            color: AppColors.darkNeutral300.withAlpha(128),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
@@ -288,7 +309,7 @@ class AppTheme {
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.darkNeutral200,
-        selectedColor: AppColors.techGreen.withValues(alpha: 51),
+        selectedColor: AppColors.techGreen.withAlpha(51),
         labelStyle: AppTypography.labelMedium.copyWith(
           color: AppColors.darkNeutral700,
         ),
@@ -298,7 +319,7 @@ class AppTheme {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusXL),
-          side: BorderSide(color: AppColors.darkNeutral300.withValues(alpha: 128)),
+          side: BorderSide(color: AppColors.darkNeutral300.withAlpha(128)),
         ),
       ),
 
@@ -325,17 +346,33 @@ class AppTheme {
           color: AppColors.darkNeutral600,
         ),
       ),
-      
+
       // Text Theme
       textTheme: TextTheme(
-        displayLarge: AppTypography.display1.copyWith(color: AppColors.darkNeutral900),
-        displayMedium: AppTypography.display2.copyWith(color: AppColors.darkNeutral900),
-        headlineMedium: AppTypography.heading2.copyWith(color: AppColors.darkNeutral800),
-        headlineSmall: AppTypography.heading3.copyWith(color: AppColors.darkNeutral800),
-        titleLarge: AppTypography.heading1.copyWith(color: AppColors.darkNeutral800),
-        bodyLarge: AppTypography.bodyLarge.copyWith(color: AppColors.darkNeutral700),
-        bodyMedium: AppTypography.bodyMedium.copyWith(color: AppColors.darkNeutral600),
-        labelLarge: AppTypography.labelLarge.copyWith(color: AppColors.darkNeutral700),
+        displayLarge: AppTypography.display1.copyWith(
+          color: AppColors.darkNeutral900,
+        ),
+        displayMedium: AppTypography.display2.copyWith(
+          color: AppColors.darkNeutral900,
+        ),
+        headlineMedium: AppTypography.heading2.copyWith(
+          color: AppColors.darkNeutral800,
+        ),
+        headlineSmall: AppTypography.heading3.copyWith(
+          color: AppColors.darkNeutral800,
+        ),
+        titleLarge: AppTypography.heading1.copyWith(
+          color: AppColors.darkNeutral800,
+        ),
+        bodyLarge: AppTypography.bodyLarge.copyWith(
+          color: AppColors.darkNeutral700,
+        ),
+        bodyMedium: AppTypography.bodyMedium.copyWith(
+          color: AppColors.darkNeutral600,
+        ),
+        labelLarge: AppTypography.labelLarge.copyWith(
+          color: AppColors.darkNeutral700,
+        ),
       ),
     );
   }

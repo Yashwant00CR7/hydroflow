@@ -396,19 +396,14 @@ Error details: $e''';
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [
-                SliverToBoxAdapter(
-                  child: _buildDebugActions(),
-                ),
+                SliverToBoxAdapter(child: _buildDebugActions()),
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
+                  delegate: SliverChildBuilderDelegate((context, index) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: _buildMessageBubble(_messages[index], index),
                       );
-                    },
-                    childCount: _messages.length,
-                  ),
+                  }, childCount: _messages.length),
                 ),
               ],
             ),
@@ -434,7 +429,8 @@ Error details: $e''';
               // Show environment debug info first
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
+                builder:
+                    (context) => AlertDialog(
                   title: const Text('API Debug Info'),
                   content: SingleChildScrollView(
                     child: Text(
@@ -452,7 +448,8 @@ Error details: $e''';
                         Navigator.pop(context);
                         try {
                           // Test Groq API directly
-                          final testResponse = await _service.testGroqConnection();
+                              final testResponse =
+                                  await _service.testGroqConnection();
 
                           messenger.showSnackBar(
                             SnackBar(
@@ -585,7 +582,7 @@ Ask me anything about hydraulic systems!""",
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 13),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -607,20 +604,31 @@ Ask me anything about hydraulic systems!""",
                 borderSide: BorderSide.none,
               ),
               prefixIcon: IconButton(
-                icon: const Icon(Icons.attach_file_outlined, color: Colors.grey),
-                onPressed: () { /* TODO */ },
+                icon: const Icon(
+                  Icons.attach_file_outlined,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  /* TODO */
+                },
               ),
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.mic_outlined, color: Colors.grey),
-                    onPressed: () { /* TODO */ },
+                    onPressed: () {
+                      /* TODO */
+                    },
                   ),
                   _isLoading
                       ? const Padding(
                           padding: EdgeInsets.all(12.0),
-                          child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                        child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                         )
                       : IconButton(
                           icon: const Icon(Icons.send, color: Color(0xFFdc2626)),

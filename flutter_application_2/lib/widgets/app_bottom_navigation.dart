@@ -26,10 +26,10 @@ class AppBottomNavigation extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withValues(alpha: 204),
+              color: Theme.of(context).colorScheme.surface.withAlpha(204),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 26),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(26),
               ),
             ),
             child: Row(
@@ -55,7 +55,9 @@ class AppBottomNavigation extends StatelessWidget {
                     if (currentPage != 'chat') {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ChatPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const ChatPage(),
+                        ),
                       );
                     }
                   },
@@ -69,7 +71,9 @@ class AppBottomNavigation extends StatelessWidget {
                     if (currentPage != 'products') {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ProductsPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const ProductsPage(),
+                        ),
                       );
                     }
                   },
@@ -85,7 +89,9 @@ class AppBottomNavigation extends StatelessWidget {
                     if (currentPage != 'cart') {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const CartPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const CartPage(),
+                        ),
                       );
                     }
                   },
@@ -107,9 +113,10 @@ class AppBottomNavigation extends StatelessWidget {
     bool showBadge = false,
     int badgeCount = 0,
   }) {
-    final color = isActive
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 153);
+    final color =
+        isActive
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.onSurface.withAlpha(153);
 
     return GestureDetector(
       onTap: onTap,
@@ -117,7 +124,10 @@ class AppBottomNavigation extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         decoration: BoxDecoration(
-          color: isActive ? Theme.of(context).colorScheme.primary.withValues(alpha: 26) : Colors.transparent,
+          color:
+              isActive
+                  ? Theme.of(context).colorScheme.primary.withAlpha(26)
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(

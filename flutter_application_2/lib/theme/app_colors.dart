@@ -21,7 +21,7 @@ class AppColors {
   // Futuristic Theme Colors
   static const Color techGreen = Color(0xFF00FFC2);
   static const Color techGreenDark = Color(0xFF00E0A8);
-  static Color glow = const Color(0xFF00FFC2).withValues(alpha: 128);
+  static Color glow = const Color(0xFF00FFC2).withAlpha(128);
 
   // Neutral Palette (Light Mode)
   static const Color neutral50 = Color(0xFFfafafa);
@@ -48,7 +48,8 @@ class AppColors {
   static const Color darkNeutral900 = Color(0xFFffffff);
 
   // Glass Effects
-  static Color glass(double opacity) => Colors.white.withAlpha((255 * opacity).round());
+  static Color glass(double opacity) =>
+      Colors.white.withAlpha((255 * opacity).round());
   static Color shadow(double opacity) =>
       Colors.black.withAlpha((255 * opacity).round());
   static Color glassDark(double opacity) =>

@@ -3,6 +3,7 @@ import 'services/cart_service.dart';
 
 import 'widgets/glass_container.dart';
 import 'theme/app_colors.dart';
+import 'invoice_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -41,9 +42,7 @@ class _CartPageState extends State<CartPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: _cartService.items.isEmpty
-          ? _buildEmptyCart()
-          : _buildCartItems(),
+      body: _cartService.items.isEmpty ? _buildEmptyCart() : _buildCartItems(),
       bottomNavigationBar: _buildBottomSection(),
     );
   }
@@ -87,11 +86,17 @@ class _CartPageState extends State<CartPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.name, style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        item.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 4),
-                      Text(item.price, style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary
-                      )),
+                      Text(
+                        item.price,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -103,7 +108,10 @@ class _CartPageState extends State<CartPage> {
                         _cartService.updateQuantity(item.id, item.quantity - 1);
                       },
                     ),
-                    Text(item.quantity.toString(), style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      item.quantity.toString(),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     IconButton(
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: () {
@@ -111,13 +119,16 @@ class _CartPageState extends State<CartPage> {
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: AppColors.error,
+                      ),
                       onPressed: () {
                         _cartService.removeItem(item.id);
                       },
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -143,14 +154,19 @@ class _CartPageState extends State<CartPage> {
               Text('Total', style: Theme.of(context).textTheme.labelMedium),
               Text(
                 '₹${_cartService.totalAmount.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const InvoicePage()),
+              );
+            },
             icon: const Icon(Icons.payment),
             label: const Text('Checkout'),
           ),

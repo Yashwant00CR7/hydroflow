@@ -192,26 +192,28 @@ class _ProductsPageState extends State<ProductsPage> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.surface,
+                        color:
+                            isSelected
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: isSelected
-                            ? null
-                            : Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 26),
-                              ),
+                        border:
+                            isSelected
+                                ? null
+                                : Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(26),
+                                ),
                       ),
                       child: Center(
                         child: Text(
                           category,
                           style: TextStyle(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context).colorScheme.onSurface,
+                            color:
+                                isSelected
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -227,99 +229,123 @@ class _ProductsPageState extends State<ProductsPage> {
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.7,
+                childAspectRatio: 0.62,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final product = filteredProducts[index];
-                  return GlassContainer(
-                    borderRadius: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Image.network(
-                                  product["image"],
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.image_not_supported),
-                                ),
-                                if (!product["inStock"])
-                                  Container(
-                                    color: Colors.black.withValues(alpha: 128),
-                                    child: const Center(
-                                      child: Text(
-                                        'Out of Stock',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final product = filteredProducts[index];
+                return GlassContainer(
+                  borderRadius: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                product["image"],
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (context, error, stackTrace) =>
+                                        const Icon(Icons.image_not_supported),
+                              ),
+                              if (!product["inStock"])
+                                Container(
+                                  color: Colors.black.withAlpha(128),
+                                  child: const Center(
+                                    child: Text(
+                                      'Out of Stock',
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ),
-                              ],
-                            ),
+                                ),
+                            ],
                           ),
                         ),
-                        Expanded(
-                          flex: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  product["category"],
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product["category"],
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.labelSmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Expanded(
+                                child: Text(
                                   product["name"],
-                                  style: Theme.of(context).textTheme.titleMedium,
-                                  maxLines: 1,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                  maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
+                                  softWrap: true,
                                 ),
-                                const Spacer(),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
                                       product["price"],
-                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium?.copyWith(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
-                                    IconButton(
-                                      onPressed: () => _addToCart(product),
-                                      icon: Icon(
-                                        _cartService.isInCart(product["name"])
-                                            ? Icons.check_circle
-                                            : Icons.add_circle_outline,
-                                        color: Theme.of(context).colorScheme.primary,
-                                      ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  IconButton(
+                                    onPressed: () => _addToCart(product),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 32,
+                                      minHeight: 32,
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                    icon: Icon(
+                                      _cartService.isInCart(product["name"])
+                                          ? Icons.check_circle
+                                          : Icons.add_circle_outline,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  );
-                },
-                childCount: filteredProducts.length,
-              ),
+                      ),
+                    ],
+                  ),
+                );
+              }, childCount: filteredProducts.length),
             ),
           ),
         ],

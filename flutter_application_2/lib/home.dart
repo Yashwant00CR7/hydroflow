@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -194,6 +194,8 @@ class _HomeScreenState extends State<HomeScreen> {
           border: Border.all(color: color.withOpacity(0.3), width: 1),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(8),
@@ -210,9 +212,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              child: Icon(icon, color: Colors.white, size: 20),
+              child: Icon(icon, color: Colors.white, size: 18),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               title,
               textAlign: TextAlign.center,
@@ -222,6 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: color,
                 letterSpacing: -0.2,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -586,14 +590,14 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: 'Hydraulic System Control',
           ),
 
-          // User Greeting (separate from header)
-          const UserGreeting(),
-
           // Scrollable Content
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  // User Greeting now scrolls with content
+                  const UserGreeting(),
+
                   // Enhanced System Status Card
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 12),
@@ -1178,45 +1182,43 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Row(
+                        GridView(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                mainAxisExtent: 150,
+                              ),
                           children: [
-                            Expanded(
-                              child: _buildQuickActionButton(
-                                'Emergency\nStop',
-                                Icons.emergency,
-                                const Color(0xFFdc2626),
-                                () => _showEmergencyDialog(context),
-                              ),
+                            _buildQuickActionButton(
+                              'Emergency\nStop',
+                              Icons.emergency,
+                              const Color(0xFFdc2626),
+                              () => _showEmergencyDialog(context),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildQuickActionButton(
-                                'System\nDiagnostics',
-                                Icons.health_and_safety,
-                                const Color(0xFF059669),
-                                () => _showDiagnosticsDialog(context),
-                              ),
+                            _buildQuickActionButton(
+                              'System\nDiagnostics',
+                              Icons.health_and_safety,
+                              const Color(0xFF059669),
+                              () => _showDiagnosticsDialog(context),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildQuickActionButton(
-                                'Maintenance\nSchedule',
-                                Icons.schedule,
-                                const Color(0xFF0891b2),
-                                () => _showMaintenanceDialog(context),
-                              ),
+                            _buildQuickActionButton(
+                              'Maintenance\nSchedule',
+                              Icons.schedule,
+                              const Color(0xFF0891b2),
+                              () => _showMaintenanceDialog(context),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildQuickActionButton(
-                                'Ask AI\nAssistant',
-                                Icons.smart_toy,
-                                const Color(0xFF7c3aed),
-                                () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ChatPage(),
-                                  ),
+                            _buildQuickActionButton(
+                              'Ask AI\nAssistant',
+                              Icons.smart_toy,
+                              const Color(0xFF7c3aed),
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ChatPage(),
                                 ),
                               ),
                             ),
