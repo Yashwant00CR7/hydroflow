@@ -4,6 +4,7 @@ import 'services/cart_service.dart';
 
 import 'widgets/glass_container.dart';
 import 'theme/app_colors.dart';
+import 'widgets/app_bottom_navigation.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -349,6 +350,10 @@ class _ProductsPageState extends State<ProductsPage> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentPage: 'products',
+        cartService: _cartService,
       ),
     );
   }

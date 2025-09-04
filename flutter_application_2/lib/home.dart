@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'products.dart';
 import 'chat_page.dart';
@@ -5,6 +6,8 @@ import 'cart_page.dart';
 import 'services/cart_service.dart';
 import 'widgets/app_header.dart';
 import 'widgets/user_greeting.dart';
+import 'widgets/app_bottom_navigation.dart';
+import 'theme/app_colors.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,11 +17,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'HydroFlow',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFFdc2626), // Red
-        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-      ),
+      // Use the main theme from main.dart
+      theme: Theme.of(context),
       home: const HomeScreen(),
     );
   }
@@ -92,13 +92,23 @@ class _HomeScreenState extends State<HomeScreen> {
     _pageController = PageController(viewportFraction: 0.9);
     _cartService.addListener(_onCartChanged);
 
+    // Listen to page changes for dynamic indicators
+    _pageController.addListener(() {
+      final int newPage = _pageController.page?.round() ?? 0;
+      if (newPage != _currentPage && mounted) {
+        setState(() {
+          _currentPage = newPage;
+        });
+      }
+    });
+
     Future.delayed(Duration.zero, () async {
       while (mounted) {
         await Future.delayed(const Duration(seconds: 3));
         if (_pageController.hasClients) {
-          _currentPage = (_currentPage + 1) % imageUrls.length;
+          int nextPage = (_currentPage + 1) % imageUrls.length;
           _pageController.animateToPage(
-            _currentPage,
+            nextPage,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
@@ -212,14 +222,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              child: Icon(icon, color: Colors.white, size: 18),
+              child: Icon(icon, color: Colors.white, size: 16),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 color: color,
                 letterSpacing: -0.2,
@@ -581,7 +591,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // Sticky Header
@@ -595,100 +605,41 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // User Greeting now scrolls with content
-                  const UserGreeting(),
-
-                  // Enhanced System Status Card
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFFdc2626),
-                          Color(0xFFb91c1c),
-                          Color(0xFF991b1b),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFdc2626).withOpacity(0.4),
-                          blurRadius: 25,
-                          offset: const Offset(0, 12),
-                        ),
-                        BoxShadow(
-                          color: const Color(0xFFdc2626).withOpacity(0.2),
-                          blurRadius: 40,
-                          offset: const Offset(0, 20),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 1,
-                      ),
+                  // Simple and professional Welcome section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 18,
                     ),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'System Status',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Last updated: ${DateTime.now().toString().substring(0, 16)}',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'All Systems Operational',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: const Color(0xFF1e3a8a),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 24,
                           ),
                         ),
+                        const SizedBox(width: 14),
                         Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              '98%',
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Welcome back, User',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1e3a8a),
                               ),
                             ),
+                            SizedBox(height: 2),
                             Text(
-                              'Efficiency',
+                              'Here is your dashboard overview.',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 12,
+                                fontSize: 13,
+                                color: Color(0xFF6b7280),
                               ),
                             ),
                           ],
@@ -697,33 +648,47 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
-
                   // Enhanced Image Carousel
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: ShaderMask(
-                            shaderCallback:
-                                (bounds) => const LinearGradient(
-                                  colors: [
-                                    Color(0xFF1e3a8a),
-                                    Color(0xFF3b82f6),
-                                  ],
-                                ).createShader(bounds),
-                            child: const Text(
-                              'System Gallery',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF1e3a8a,
+                                  ).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.image,
+                                  color: Color(0xFF1e3a8a),
+                                  size: 20,
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'System Gallery',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1e3a8a),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -731,6 +696,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 220,
                           child: PageView.builder(
                             controller: _pageController,
+                            onPageChanged: (int page) {
+                              setState(() {
+                                _currentPage = page;
+                              });
+                            },
                             itemCount: imageUrls.length,
                             itemBuilder: (context, index) {
                               return AnimatedContainer(
@@ -755,59 +725,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(24),
-                                  child: Stack(
-                                    children: [
-                                      // Main image
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(24),
-                                        child: Image.network(
-                                          imageUrls[index],
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          errorBuilder:
-                                              (
-                                                context,
-                                                error,
-                                                stackTrace,
-                                              ) => Container(
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    begin: Alignment.topLeft,
-                                                    end: Alignment.bottomRight,
-                                                    colors: [
-                                                      Colors.grey[200]!,
-                                                      Colors.grey[300]!,
-                                                    ],
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(24),
+                                  child: Image.network(
+                                    imageUrls[index],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Colors.grey[200]!,
+                                                    Colors.grey[300]!,
+                                                  ],
                                                 ),
-                                                child: const Center(
-                                                  child: Icon(
-                                                    Icons.image_not_supported,
-                                                    size: 50,
-                                                    color: Colors.grey,
-                                                  ),
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.image_not_supported,
+                                                  size: 50,
+                                                  color: Colors.grey,
                                                 ),
                                               ),
-                                        ),
-                                      ),
-                                      // Subtle border glow
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            24,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.3,
                                             ),
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ),
                               );
@@ -815,45 +760,74 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Enhanced Carousel indicators
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            imageUrls.length,
-                            (index) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: _currentPage == index ? 32 : 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                gradient:
-                                    _currentPage == index
-                                        ? const LinearGradient(
-                                          colors: [
-                                            Color(0xFF1e3a8a),
-                                            Color(0xFF3b82f6),
-                                          ],
-                                        )
-                                        : null,
-                                color:
-                                    _currentPage == index
-                                        ? null
-                                        : Colors.grey[300]?.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(6),
-                                boxShadow:
-                                    _currentPage == index
-                                        ? [
+                        // Animated carousel indicators: active indicator slides horizontally
+                        SizedBox(
+                          height: 24,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              const double dotWidth = 8;
+                              const double dotSpacing = 8; // 4 left + 4 right
+                              const double activeDotWidth = 18;
+                              final int count = imageUrls.length;
+                              final double rowWidth =
+                                  (count * dotWidth) +
+                                  ((count - 1) * dotSpacing);
+                              final double startLeft =
+                                  (constraints.maxWidth - rowWidth) / 2;
+                              final double activeLeft =
+                                  startLeft +
+                                  (_currentPage * (dotWidth + dotSpacing));
+
+                              return Stack(
+                                children: [
+                                  Positioned(
+                                    left: startLeft,
+                                    top: 0,
+                                    child: Row(
+                                      children: List.generate(
+                                        count,
+                                        (index) => Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          width: dotWidth,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[300]
+                                                ?.withOpacity(0.6),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  AnimatedPositioned(
+                                    duration: const Duration(milliseconds: 300),
+                                    left: activeLeft,
+                                    top: 0,
+                                    child: Container(
+                                      width: activeDotWidth,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1e3a8a),
+                                        borderRadius: BorderRadius.circular(6),
+                                        boxShadow: [
                                           BoxShadow(
                                             color: const Color(
                                               0xFF1e3a8a,
                                             ).withOpacity(0.3),
-                                            blurRadius: 8,
+                                            blurRadius: 6,
                                             offset: const Offset(0, 2),
                                           ),
-                                        ]
-                                        : null,
-                              ),
-                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -867,14 +841,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.9),
-                          Colors.white.withOpacity(0.7),
-                        ],
-                      ),
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.darkNeutral200.withOpacity(0.95),
+                                  AppColors.primaryBlueDark.withOpacity(0.7),
+                                ],
+                              )
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.9),
+                                  Colors.white.withOpacity(0.7),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -901,7 +885,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1e3a8a).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.primaryBlueDark.withOpacity(
+                                          0.15,
+                                        )
+                                        : const Color(
+                                          0xFF1e3a8a,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(
@@ -1081,11 +1073,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       decoration: BoxDecoration(
                                                         color:
                                                             item["inStock"]
-                                                                ? const Color(
-                                                                  0xFFdc2626,
-                                                                )
-                                                                : Colors
-                                                                    .grey[600],
+                                                                ? (Theme.of(
+                                                                          context,
+                                                                        ).brightness ==
+                                                                        Brightness
+                                                                            .dark
+                                                                    ? AppColors
+                                                                        .techGreen
+                                                                    : Theme.of(
+                                                                          context,
+                                                                        )
+                                                                        .colorScheme
+                                                                        .secondary)
+                                                                : Theme.of(
+                                                                  context,
+                                                                ).disabledColor,
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               6,
@@ -1098,7 +1100,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             ? Icons.check
                                                             : Icons
                                                                 .add_shopping_cart,
-                                                        color: Colors.white,
+                                                        color:
+                                                            Theme.of(
+                                                                      context,
+                                                                    ).brightness ==
+                                                                    Brightness
+                                                                        .dark
+                                                                ? AppColors
+                                                                    .darkNeutral900
+                                                                : Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .colorScheme
+                                                                    .onSecondary,
                                                         size: 12,
                                                       ),
                                                     ),
@@ -1182,53 +1196,70 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        GridView(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                mainAxisExtent: 150,
-                              ),
-                          children: [
-                            _buildQuickActionButton(
-                              'Emergency\nStop',
-                              Icons.emergency,
-                              const Color(0xFFdc2626),
-                              () => _showEmergencyDialog(context),
-                            ),
-                            _buildQuickActionButton(
-                              'System\nDiagnostics',
-                              Icons.health_and_safety,
-                              const Color(0xFF059669),
-                              () => _showDiagnosticsDialog(context),
-                            ),
-                            _buildQuickActionButton(
-                              'Maintenance\nSchedule',
-                              Icons.schedule,
-                              const Color(0xFF0891b2),
-                              () => _showMaintenanceDialog(context),
-                            ),
-                            _buildQuickActionButton(
-                              'Ask AI\nAssistant',
-                              Icons.smart_toy,
-                              const Color(0xFF7c3aed),
-                              () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ChatPage(),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final double spacing = 12;
+                            final double tileWidth =
+                                (constraints.maxWidth - spacing) / 2;
+                            const double tileHeight = 120;
+                            return Wrap(
+                              spacing: spacing,
+                              runSpacing: spacing,
+                              children: [
+                                SizedBox(
+                                  width: tileWidth,
+                                  height: tileHeight,
+                                  child: _buildQuickActionButton(
+                                    'Emergency\nStop',
+                                    Icons.emergency,
+                                    const Color(0xFFdc2626),
+                                    () => _showEmergencyDialog(context),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
+                                SizedBox(
+                                  width: tileWidth,
+                                  height: tileHeight,
+                                  child: _buildQuickActionButton(
+                                    'System\nDiagnostics',
+                                    Icons.health_and_safety,
+                                    const Color(0xFF059669),
+                                    () => _showDiagnosticsDialog(context),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: tileWidth,
+                                  height: tileHeight,
+                                  child: _buildQuickActionButton(
+                                    'Maintenance\nSchedule',
+                                    Icons.schedule,
+                                    const Color(0xFF0891b2),
+                                    () => _showMaintenanceDialog(context),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: tileWidth,
+                                  height: tileHeight,
+                                  child: _buildQuickActionButton(
+                                    'Ask AI\nAssistant',
+                                    Icons.smart_toy,
+                                    const Color(0xFF7c3aed),
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const ChatPage(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   // System Metrics Overview
                   Container(
@@ -1732,117 +1763,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(12),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1e3a8a),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(Icons.home, color: Color(0xFFdc2626), size: 20),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ChatPage()),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFdc2626), Color(0xFFb91c1c)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFdc2626).withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.chat_bubble_outline,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProductsPage()),
-                );
-              },
-              child: const Icon(
-                Icons.inventory_2,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CartPage()),
-                );
-              },
-              child: Stack(
-                children: [
-                  const Icon(
-                    Icons.shopping_cart,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  if (_cartService.itemCount > 0)
-                    Positioned(
-                      right: -2,
-                      top: -2,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFdc2626),
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          '${_cartService.itemCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentPage: 'home',
+        cartService: _cartService,
       ),
     );
   }
@@ -2043,6 +1966,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 extension ColorOpacity on Color {
   Color withOpacity(double opacity) {
-    return this.withAlpha((255 * opacity).round());
+    return withAlpha((255 * opacity).round());
   }
 }

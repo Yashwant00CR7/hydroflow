@@ -284,7 +284,7 @@ Ask me anything about hydraulic systems!""",
       if (!gotAny ||
           (_typePending.trim().isEmpty && _typeDisplayed.trim().isEmpty)) {
         _typePending =
-            '''I apologize, but I couldn\'t generate a response at the moment. This could be due to:
+            '''I apologize, but I couldn't generate a response at the moment. This could be due to:
 
 • Network connectivity issues
 • API service temporarily unavailable  
@@ -399,10 +399,10 @@ Error details: $e''';
                 SliverToBoxAdapter(child: _buildDebugActions()),
                 SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: _buildMessageBubble(_messages[index], index),
-                      );
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildMessageBubble(_messages[index], index),
+                    );
                   }, childCount: _messages.length),
                 ),
               ],
@@ -431,47 +431,47 @@ Error details: $e''';
                 context: context,
                 builder:
                     (context) => AlertDialog(
-                  title: const Text('API Debug Info'),
-                  content: SingleChildScrollView(
-                    child: Text(
-                      EnvConfig.getDebugInfo(),
-                      style: const TextStyle(fontFamily: 'monospace'),
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        try {
-                          // Test Groq API directly
+                      title: const Text('API Debug Info'),
+                      content: SingleChildScrollView(
+                        child: Text(
+                          EnvConfig.getDebugInfo(),
+                          style: const TextStyle(fontFamily: 'monospace'),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Close'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            try {
+                              // Test Groq API directly
                               final testResponse =
                                   await _service.testGroqConnection();
 
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Groq API Test: ${testResponse.length > 50 ? 'Working!' : testResponse}',
-                              ),
-                              duration: const Duration(seconds: 5),
-                            ),
-                          );
-                        } catch (e) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text('API Test Failed: $e'),
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text('Test API'),
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Groq API Test: ${testResponse.length > 50 ? 'Working!' : testResponse}',
+                                  ),
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            } catch (e) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text('API Test Failed: $e'),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Test API'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
           ),
@@ -557,7 +557,7 @@ Ask me anything about hydraulic systems!""",
                     (context) => AlertDialog(
                       title: const Text('About Hydraulic Assistant'),
                       content: const Text(
-                        'This AI assistant specializes in hydraulic hose pressure and system knowledge. ' 
+                        'This AI assistant specializes in hydraulic hose pressure and system knowledge. '
                         'It uses advanced AI to provide accurate, safety-focused information about hydraulic systems.',
                       ),
                       actions: [
@@ -623,17 +623,17 @@ Ask me anything about hydraulic systems!""",
                   ),
                   _isLoading
                       ? const Padding(
-                          padding: EdgeInsets.all(12.0),
+                        padding: EdgeInsets.all(12.0),
                         child: SizedBox(
                           height: 24,
                           width: 24,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        )
+                      )
                       : IconButton(
-                          icon: const Icon(Icons.send, color: Color(0xFFdc2626)),
-                          onPressed: _sendMessage,
-                        ),
+                        icon: const Icon(Icons.send, color: Color(0xFFdc2626)),
+                        onPressed: _sendMessage,
+                      ),
                 ],
               ),
             ),

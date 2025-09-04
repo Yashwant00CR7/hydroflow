@@ -195,13 +195,11 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.techGreen,
-        secondary: AppColors.techGreen,
+        secondary: AppColors.accentTeal,
         surface: AppColors.darkNeutral50,
-
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onSurface: AppColors.darkNeutral900,
-
         error: AppColors.error,
         onError: Colors.white,
       ),
@@ -219,10 +217,11 @@ class AppTheme {
       // Scaffold Theme
       scaffoldBackgroundColor: AppColors.darkNeutral50,
 
-      // Card Theme
+      // Card Theme (Neumorphic effect)
       cardTheme: CardTheme(
-        color: AppColors.darkNeutral100.withAlpha(204),
-        elevation: 0,
+        color: AppColors.darkNeutral100.withAlpha(220),
+        elevation: 8,
+        shadowColor: AppColors.tealGlow,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
           side: BorderSide(
@@ -233,12 +232,13 @@ class AppTheme {
         margin: const EdgeInsets.all(AppSpacing.marginSM),
       ),
 
-      // Elevated Button Theme
+      // Elevated Button Theme (Neumorphic effect)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(AppColors.techGreen),
-          foregroundColor: WidgetStateProperty.all(Colors.black),
-          elevation: WidgetStateProperty.all(0),
+          backgroundColor: WidgetStateProperty.all(AppColors.accentPurple),
+          foregroundColor: WidgetStateProperty.all(Colors.white),
+          elevation: WidgetStateProperty.all(6),
+          shadowColor: WidgetStateProperty.all(AppColors.purpleGlow),
           padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(
               horizontal: AppSpacing.paddingXL,
@@ -251,15 +251,16 @@ class AppTheme {
             ),
           ),
           textStyle: WidgetStateProperty.all(AppTypography.buttonMedium),
-          shadowColor: WidgetStateProperty.all(AppColors.techGreen),
-          overlayColor: WidgetStateProperty.all(Colors.white.withAlpha(51)),
+          overlayColor: WidgetStateProperty.all(
+            AppColors.accentPurple.withAlpha(40),
+          ),
         ),
       ),
 
       // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.techGreen,
+          foregroundColor: AppColors.accentTeal,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.paddingLG,
             vertical: AppSpacing.paddingSM,
@@ -280,7 +281,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
-          borderSide: const BorderSide(color: AppColors.techGreen, width: 2),
+          borderSide: const BorderSide(color: AppColors.accentTeal, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
@@ -295,7 +296,7 @@ class AppTheme {
 
       // Icon Theme
       iconTheme: const IconThemeData(
-        color: AppColors.darkNeutral600,
+        color: AppColors.accentYellow,
         size: AppSpacing.iconMD,
       ),
 
@@ -309,7 +310,7 @@ class AppTheme {
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.darkNeutral200,
-        selectedColor: AppColors.techGreen.withAlpha(51),
+        selectedColor: AppColors.accentOrange.withAlpha(51),
         labelStyle: AppTypography.labelMedium.copyWith(
           color: AppColors.darkNeutral700,
         ),
@@ -356,13 +357,13 @@ class AppTheme {
           color: AppColors.darkNeutral900,
         ),
         headlineMedium: AppTypography.heading2.copyWith(
-          color: AppColors.darkNeutral800,
+          color: AppColors.accentTeal,
         ),
         headlineSmall: AppTypography.heading3.copyWith(
-          color: AppColors.darkNeutral800,
+          color: AppColors.accentPurple,
         ),
         titleLarge: AppTypography.heading1.copyWith(
-          color: AppColors.darkNeutral800,
+          color: AppColors.accentYellow,
         ),
         bodyLarge: AppTypography.bodyLarge.copyWith(
           color: AppColors.darkNeutral700,
@@ -371,7 +372,7 @@ class AppTheme {
           color: AppColors.darkNeutral600,
         ),
         labelLarge: AppTypography.labelLarge.copyWith(
-          color: AppColors.darkNeutral700,
+          color: AppColors.accentOrange,
         ),
       ),
     );

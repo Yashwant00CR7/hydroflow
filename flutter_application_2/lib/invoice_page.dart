@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'services/cart_service.dart';
-
 import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
-import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 
 class InvoicePage extends StatelessWidget {
   const InvoicePage({super.key});
@@ -19,7 +20,7 @@ class InvoicePage extends StatelessWidget {
     return double.tryParse(digits) ?? 0.0;
   }
 
-  Future<void> _generatePdf(BuildContext context, CartService cart) async {
+  Future<pw.Document> _buildPdf(CartService cart) async {
     final pdf = pw.Document();
 
     final date = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
@@ -75,12 +76,13 @@ class InvoicePage extends StatelessWidget {
                           ),
                         ),
                         pw.SizedBox(height: 4),
-                        pw.Text('Sabari Hydro Pneumatics'),
-                        pw.Text('No. 16, Gandhi Nagar, 2nd Cross'),
-                        pw.Text('Coimbatore, Tamil Nadu 641012'),
-                        pw.Text('Phone: +91-99999-99999'),
-                        pw.Text('Email: info@sabarihydro.com'),
-                        pw.Text('GSTIN: 33AAAAA0000A1Z5'),
+                        pw.Text('SABARI HYDRO PNEUMATICS'),
+                        pw.Text('Traders for : Hydraulic & Pneumatic Products'),
+                        pw.Text('39, Nadar Street, Opp Govt Hr Sec School'),
+                        pw.Text('Ganapathy, Coimbatore - 641006.'),
+                        pw.Text('Mobile: 9842714370, 9003963932'),
+                        pw.Text('GSTIN: 33AJHPN3830H1ZD'),
+                        pw.Text('Email: sabaripneumatics@gmail.com'),
                       ],
                     ),
                     pw.SizedBox(width: 12),
@@ -103,7 +105,7 @@ class InvoicePage extends StatelessWidget {
               ),
               pw.SizedBox(height: 16),
 
-              pw.Table.fromTextArray(
+              pw.TableHelper.fromTextArray(
                 headers: const ['Item', 'Qty', 'Price', 'Amount'],
                 data:
                     items.map((e) {
@@ -162,7 +164,53 @@ class InvoicePage extends StatelessWidget {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+    return pdf;
+  }
+
+  Future<void> _sharePdf(BuildContext context, CartService cart) async {
+    final pdf = await _buildPdf(cart);
+    final bytes = await pdf.save();
+    final dir = await getTemporaryDirectory();
+    final fileName =
+        'invoice_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(bytes, flush: true);
+    await Share.shareXFiles([XFile(file.path)], text: 'Invoice PDF');
+  }
+
+  Future<void> _downloadPdf(BuildContext context, CartService cart) async {
+    try {
+      final pdf = await _buildPdf(cart);
+      final bytes = await pdf.save();
+      final dir = await getApplicationDocumentsDirectory();
+      final fileName =
+          'invoice_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsBytes(bytes, flush: true);
+
+      // Check if file exists after writing
+      final exists = await file.exists();
+      if (exists) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Invoice saved to: ${file.path}')),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to save PDF file.')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error saving PDF: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving PDF: $e')));
+      }
+    }
   }
 
   pw.Widget _lineRow(String label, String value, {bool isBold = false}) {
@@ -227,12 +275,17 @@ class InvoicePage extends StatelessWidget {
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 SizedBox(height: 4),
-                                Text('Sabari Hydro Pneumatics'),
-                                Text('No. 16, Gandhi Nagar, 2nd Cross'),
-                                Text('Coimbatore, Tamil Nadu 641012'),
-                                Text('Phone: +91-99999-99999'),
-                                Text('Email: info@sabarihydro.com'),
-                                Text('GSTIN: 33AAAAA0000A1Z5'),
+                                Text('SABARI HYDRO PNEUMATICS'),
+                                Text(
+                                  'Traders for : Hydraulic & Pneumatic Products',
+                                ),
+                                Text(
+                                  '39, Nadar Street, Opp Govt Hr Sec School',
+                                ),
+                                Text('Ganapathy, Coimbatore - 641006.'),
+                                Text('Mobile: 9842714370, 9003963932'),
+                                Text('GSTIN: 33AJHPN3830H1ZD'),
+                                Text('Email: sabaripneumatics@gmail.com'),
                               ],
                             ),
                           ),
@@ -311,10 +364,70 @@ class InvoicePage extends StatelessWidget {
               ? null
               : Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton.icon(
-                  onPressed: () => _generatePdf(context, cart),
-                  icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('Generate & Share PDF Invoice'),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _sharePdf(context, cart),
+                          icon: const Icon(
+                            Icons.picture_as_pdf,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Share PDF',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFdc2626),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            try {
+                              await _downloadPdf(context, cart);
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Failed to save PDF: \\n${e.toString()}',
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.download, color: Colors.white),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Download PDF',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF1e3a8a),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
     );

@@ -23,6 +23,18 @@ class AppColors {
   static const Color techGreenDark = Color(0xFF00E0A8);
   static Color glow = const Color(0xFF00FFC2).withAlpha(128);
 
+  // Additional Accent Colors for Dashboard
+  static const Color accentTeal = Color(0xFF1DE9B6); // Teal accent
+  static const Color accentPurple = Color(0xFF7C4DFF); // Purple accent
+  static const Color accentYellow = Color(0xFFFFEB3B); // Yellow accent
+  static const Color accentOrange = Color(0xFFFF9100); // Orange accent
+
+  // Glow utilities for neumorphic effects
+  static Color tealGlow = const Color(0xFF1DE9B6).withAlpha(100);
+  static Color purpleGlow = const Color(0xFF7C4DFF).withAlpha(100);
+  static Color yellowGlow = const Color(0xFFFFEB3B).withAlpha(80);
+  static Color orangeGlow = const Color(0xFFFF9100).withAlpha(80);
+
   // Neutral Palette (Light Mode)
   static const Color neutral50 = Color(0xFFfafafa);
   static const Color neutral100 = Color(0xFFf5f5f5);
