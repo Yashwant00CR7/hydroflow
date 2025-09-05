@@ -1,11 +1,9 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'products.dart';
 import 'chat_page.dart';
 import 'cart_page.dart';
 import 'services/cart_service.dart';
 import 'widgets/app_header.dart';
-import 'widgets/user_greeting.dart';
 import 'widgets/app_bottom_navigation.dart';
 import 'theme/app_colors.dart';
 
@@ -177,31 +175,45 @@ class _HomeScreenState extends State<HomeScreen> {
     Color color,
     VoidCallback onTap,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [color.withOpacity(0.15), color.withOpacity(0.08)],
-          ),
-          borderRadius: BorderRadius.circular(16),
+          color: isDark ? AppColors.darkSurface.withOpacity(0.04) : null,
+          gradient:
+              isDark
+                  ? null
+                  : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
+                  ),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: isDark ? AppColors.shadow(0.28) : color.withOpacity(0.15),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
             ),
             BoxShadow(
-              color: Colors.white.withOpacity(0.8),
-              blurRadius: 8,
-              offset: const Offset(-2, -2),
+              color:
+                  isDark
+                      ? AppColors.shadow(0.12)
+                      : Colors.white.withOpacity(0.9),
+              blurRadius: 10,
+              offset: const Offset(-3, -3),
             ),
           ],
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
+          border: Border.all(
+            color:
+                isDark
+                    ? AppColors.darkBorder.withOpacity(0.6)
+                    : color.withOpacity(0.25),
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,29 +222,43 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color, color.withOpacity(0.8)],
-                ),
-                borderRadius: BorderRadius.circular(12),
+                color: isDark ? AppColors.glassDark(0.08) : null,
+                gradient:
+                    isDark
+                        ? null
+                        : LinearGradient(
+                          colors: [color, color.withOpacity(0.8)],
+                        ),
+                borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 8,
+                    color:
+                        isDark ? AppColors.shadow(0.2) : color.withOpacity(0.3),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ],
+                border:
+                    isDark
+                        ? Border.all(
+                          color: AppColors.darkBorder.withOpacity(0.5),
+                          width: 1,
+                        )
+                        : null,
               ),
-              child: Icon(icon, color: Colors.white, size: 16),
+              child: Icon(icon, color: isDark ? color : Colors.white, size: 16),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             Text(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: color,
-                letterSpacing: -0.2,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color:
+                    isDark
+                        ? AppColors.darkSecondaryText
+                        : const Color(0xFF6b7280).withOpacity(0.8),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -250,28 +276,40 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData icon,
     Color color,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
-        ),
+        color: isDark ? AppColors.darkSurface.withOpacity(0.04) : null,
+        gradient:
+            isDark
+                ? null
+                : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
+                ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.15),
+            color: isDark ? AppColors.shadow(0.28) : color.withOpacity(0.15),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.9),
+            color:
+                isDark ? AppColors.shadow(0.12) : Colors.white.withOpacity(0.9),
             blurRadius: 10,
             offset: const Offset(-3, -3),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.25), width: 1),
+        border: Border.all(
+          color:
+              isDark
+                  ? AppColors.darkBorder.withOpacity(0.6)
+                  : color.withOpacity(0.25),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,31 +319,56 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color, color.withOpacity(0.8)],
-                  ),
+                  color: isDark ? AppColors.glassDark(0.08) : null,
+                  gradient:
+                      isDark
+                          ? null
+                          : LinearGradient(
+                            colors: [color, color.withOpacity(0.8)],
+                          ),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color:
+                          isDark
+                              ? AppColors.shadow(0.2)
+                              : color.withOpacity(0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
+                  border:
+                      isDark
+                          ? Border.all(
+                            color: AppColors.darkBorder.withOpacity(0.5),
+                            width: 1,
+                          )
+                          : null,
                 ),
-                child: Icon(icon, color: Colors.white, size: 16),
+                child: Icon(
+                  icon,
+                  color: isDark ? color : Colors.white,
+                  size: 16,
+                ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color, color.withOpacity(0.9)],
-                  ),
+                  color: isDark ? AppColors.glassDark(0.08) : null,
+                  gradient:
+                      isDark
+                          ? null
+                          : LinearGradient(
+                            colors: [color, color.withOpacity(0.9)],
+                          ),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color:
+                          isDark
+                              ? color.withAlpha(140)
+                              : color.withOpacity(0.3),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -313,8 +376,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Text(
                   status,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isDark ? AppColors.darkPrimaryText : Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -329,7 +392,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: color,
+              color: isDark ? AppColors.darkPrimaryText : color,
               letterSpacing: -0.5,
             ),
           ),
@@ -339,7 +402,10 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF6b7280).withOpacity(0.8),
+              color:
+                  isDark
+                      ? AppColors.darkSecondaryText
+                      : const Color(0xFF6b7280).withOpacity(0.8),
             ),
           ),
         ],
@@ -371,22 +437,37 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1e3a8a),
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.accentColor
+                          : const Color(0xFF1e3a8a),
                 ),
               ),
               Text(
                 description,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF6b7280)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : const Color(0xFF6b7280),
+                ),
               ),
             ],
           ),
         ),
         Text(
           time,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF9ca3af)),
+          style: TextStyle(
+            fontSize: 11,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.7)
+                    : const Color(0xFF9ca3af),
+          ),
         ),
       ],
     );
@@ -416,15 +497,28 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1e3a8a),
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.accentColor
+                          : const Color(0xFF1e3a8a),
                 ),
               ),
               Text(
                 description,
                 style: const TextStyle(fontSize: 12, color: Color(0xFF6b7280)),
+              ),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : const Color(0xFF6b7280),
+                ),
               ),
             ],
           ),
@@ -625,21 +719,29 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 14),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'Welcome back, User',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             Text(
                               'Here is your dashboard overview.',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF6b7280),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white.withOpacity(0.7)
+                                        : const Color(0xFF6b7280),
                               ),
                             ),
                           ],
@@ -651,45 +753,69 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Enhanced Image Carousel
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : Colors.white,
                       borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.4)
+                                  : Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF1e3a8a,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.image,
-                                  color: Color(0xFF1e3a8a),
-                                  size: 20,
-                                ),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
+                                        )
+                                        : const Color(
+                                          0xFF1e3a8a,
+                                        ).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              const SizedBox(width: 12),
-                              const Text(
+                              child: Icon(
+                                Icons.photo_library,
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFF1e3a8a),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
                                 'System Gallery',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1e3a8a),
+                                  color:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkPrimaryText
+                                          : const Color(0xFF1e3a8a),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         SizedBox(
@@ -833,7 +959,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 20),
 
                   // Enhanced Frequently Purchased Section
@@ -841,16 +966,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
                       gradient:
                           Theme.of(context).brightness == Brightness.dark
-                              ? LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColors.darkNeutral200.withOpacity(0.95),
-                                  AppColors.primaryBlueDark.withOpacity(0.7),
-                                ],
-                              )
+                              ? null
                               : LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -862,18 +984,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.4)
+                                  : Colors.black.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.8),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.8),
                           blurRadius: 10,
                           offset: const Offset(-5, -5),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
@@ -888,28 +1019,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color:
                                     Theme.of(context).brightness ==
                                             Brightness.dark
-                                        ? AppColors.primaryBlueDark.withOpacity(
-                                          0.15,
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
                                         )
                                         : const Color(
                                           0xFF1e3a8a,
                                         ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.inventory_2,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFF1e3a8a),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'Frequently Purchased',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1e3a8a),
+                                  color:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.darkPrimaryText
+                                          : const Color(0xFF1e3a8a),
                                 ),
                               ),
                             ),
@@ -1073,18 +1212,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       decoration: BoxDecoration(
                                                         color:
                                                             item["inStock"]
-                                                                ? (Theme.of(
-                                                                          context,
-                                                                        ).brightness ==
-                                                                        Brightness
-                                                                            .dark
-                                                                    ? AppColors
-                                                                        .techGreen
-                                                                    : Theme.of(
-                                                                          context,
-                                                                        )
-                                                                        .colorScheme
-                                                                        .secondary)
+                                                                ? Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .colorScheme
+                                                                    .secondary
                                                                 : Theme.of(
                                                                   context,
                                                                 ).disabledColor,
@@ -1141,29 +1273,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.95),
-                          Colors.white.withOpacity(0.8),
-                        ],
-                      ),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? null
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.95),
+                                  Colors.white.withOpacity(0.8),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.35)
+                                  : Colors.black.withOpacity(0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.9),
                           blurRadius: 15,
                           offset: const Offset(-8, -8),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -1175,22 +1323,38 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1e3a8a).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
+                                        )
+                                        : const Color(
+                                          0xFF1e3a8a,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.flash_on,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFF1e3a8a),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               'Quick Actions',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkPrimaryText
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
                           ],
@@ -1266,29 +1430,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.95),
-                          Colors.white.withOpacity(0.8),
-                        ],
-                      ),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? null
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.95),
+                                  Colors.white.withOpacity(0.8),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.35)
+                                  : Colors.black.withOpacity(0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.9),
                           blurRadius: 15,
                           offset: const Offset(-8, -8),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -1300,22 +1480,38 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1e3a8a).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
+                                        )
+                                        : const Color(
+                                          0xFF1e3a8a,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.analytics,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFF1e3a8a),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               'System Metrics',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkPrimaryText
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
                           ],
@@ -1379,29 +1575,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.95),
-                          Colors.white.withOpacity(0.8),
-                        ],
-                      ),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? null
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.95),
+                                  Colors.white.withOpacity(0.8),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.35)
+                                  : Colors.black.withOpacity(0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.9),
                           blurRadius: 15,
                           offset: const Offset(-8, -8),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -1413,22 +1625,38 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1e3a8a).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
+                                        )
+                                        : const Color(
+                                          0xFF1e3a8a,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.history,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFF1e3a8a),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               'Recent Activity',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkPrimaryText
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
                           ],
@@ -1468,29 +1696,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.95),
-                          Colors.white.withOpacity(0.8),
-                        ],
-                      ),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? null
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.95),
+                                  Colors.white.withOpacity(0.8),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.35)
+                                  : Colors.black.withOpacity(0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.9),
                           blurRadius: 15,
                           offset: const Offset(-8, -8),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -1502,22 +1746,38 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFdc2626).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
+                                        )
+                                        : const Color(
+                                          0xFFdc2626,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.notification_important,
-                                color: Color(0xFFdc2626),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.error
+                                        : const Color(0xFFdc2626),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               'Maintenance Reminders',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkPrimaryText
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
                           ],
@@ -1557,29 +1817,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.95),
-                          Colors.white.withOpacity(0.8),
-                        ],
-                      ),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? null
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.95),
+                                  Colors.white.withOpacity(0.8),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.35)
+                                  : Colors.black.withOpacity(0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.9),
                           blurRadius: 15,
                           offset: const Offset(-8, -8),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -1591,22 +1867,38 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1e3a8a).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor.withOpacity(
+                                          0.14,
+                                        )
+                                        : const Color(
+                                          0xFF1e3a8a,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.trending_up,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : const Color(0xFF1e3a8a),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               'Performance Analytics',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkPrimaryText
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
                           ],
@@ -1674,29 +1966,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.95),
-                          Colors.white.withOpacity(0.8),
-                        ],
-                      ),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.darkCard
+                              : null,
+                      gradient:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? null
+                              : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.95),
+                                  Colors.white.withOpacity(0.8),
+                                ],
+                              ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.35)
+                                  : Colors.black.withOpacity(0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.9),
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.black.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.9),
                           blurRadius: 15,
                           offset: const Offset(-8, -8),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkBorder
+                                : Colors.white.withOpacity(0.4),
                         width: 1,
                       ),
                     ),
@@ -1708,22 +2016,38 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFdc2626).withOpacity(0.1),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkSurface.withOpacity(
+                                          0.06,
+                                        )
+                                        : const Color(
+                                          0xFFdc2626,
+                                        ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.newspaper,
-                                color: Color(0xFFdc2626),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.accentColor
+                                        : const Color(0xFFdc2626),
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
+                            Text(
                               'Industry Updates',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1e3a8a),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.darkPrimaryText
+                                        : const Color(0xFF1e3a8a),
                               ),
                             ),
                           ],
@@ -1781,25 +2105,44 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
-        ),
+        color:
+            Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkSurface.withOpacity(0.04)
+                : null,
+        gradient:
+            Theme.of(context).brightness == Brightness.dark
+                ? null
+                : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [color.withOpacity(0.12), color.withOpacity(0.06)],
+                ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.15),
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.shadow(0.28)
+                    : color.withOpacity(0.15),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.9),
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.shadow(0.12)
+                    : Colors.white.withOpacity(0.9),
             blurRadius: 10,
             offset: const Offset(-3, -3),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.25), width: 1),
+        border: Border.all(
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkBorder.withOpacity(0.6)
+                  : color.withOpacity(0.25),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1809,59 +2152,108 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color, color.withOpacity(0.8)],
-                  ),
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.glassDark(0.08)
+                          : null,
+                  gradient:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? null
+                          : LinearGradient(
+                            colors: [color, color.withOpacity(0.8)],
+                          ),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.shadow(0.18)
+                              : color.withOpacity(0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
+                  border:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Border.all(
+                            color: AppColors.darkBorder.withOpacity(0.5),
+                            width: 1,
+                          )
+                          : null,
                 ),
-                child: Icon(icon, color: Colors.white, size: 16),
+                child: Icon(
+                  icon,
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? color
+                          : Colors.white,
+                  size: 16,
+                ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      isPositive
-                          ? const Color(0xFF059669)
-                          : const Color(0xFFdc2626),
-                      isPositive
-                          ? const Color(0xFF059669).withOpacity(0.9)
-                          : const Color(0xFFdc2626).withOpacity(0.9),
-                    ],
-                  ),
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.glassDark(0.08)
+                          : null,
+                  gradient:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? LinearGradient(
+                            colors: [color, color.withOpacity(0.9)],
+                          )
+                          : LinearGradient(
+                            colors: [
+                              isPositive
+                                  ? const Color(0xFF059669)
+                                  : const Color(0xFFdc2626),
+                              isPositive
+                                  ? const Color(0xFF059669).withOpacity(0.9)
+                                  : const Color(0xFFdc2626).withOpacity(0.9),
+                            ],
+                          ),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: (isPositive
-                              ? const Color(0xFF059669)
-                              : const Color(0xFFdc2626))
-                          .withOpacity(0.3),
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.shadow(0.18)
+                              : (isPositive
+                                      ? const Color(0xFF059669)
+                                      : const Color(0xFFdc2626))
+                                  .withOpacity(0.3),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
                   ],
+                  border:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Border.all(
+                            color: AppColors.darkBorder.withOpacity(0.5),
+                            width: 1,
+                          )
+                          : null,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                      color: Colors.white,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.white,
                       size: 10,
                     ),
                     const SizedBox(width: 2),
                     Text(
                       change,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkPrimaryText
+                                : Colors.white,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
@@ -1878,7 +2270,10 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: color,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkPrimaryText
+                      : color,
               letterSpacing: -0.5,
             ),
           ),
@@ -1888,7 +2283,10 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF6b7280).withOpacity(0.8),
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkSecondaryText
+                      : const Color(0xFF6b7280).withOpacity(0.8),
             ),
           ),
         ],
@@ -1928,16 +2326,29 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1e3a8a),
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.accentColor
+                          : const Color(0xFF1e3a8a),
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 description,
                 style: const TextStyle(fontSize: 12, color: Color(0xFF6b7280)),
+              ),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : const Color(0xFF6b7280),
+                ),
               ),
               const SizedBox(height: 4),
               Container(

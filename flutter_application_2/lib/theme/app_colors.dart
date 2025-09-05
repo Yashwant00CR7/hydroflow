@@ -18,22 +18,14 @@ class AppColors {
   static const Color info = Color(0xFF3b82f6);
   static const Color infoLight = Color(0xFF60a5fa);
 
-  // Futuristic Theme Colors
-  static const Color techGreen = Color(0xFF00FFC2);
-  static const Color techGreenDark = Color(0xFF00E0A8);
-  static Color glow = const Color(0xFF00FFC2).withAlpha(128);
+  // Accent and Futuristic Colors (REFINED for Professional Look)
+  static const Color accentColor = Color(
+    0xFF007AFF,
+  ); // A professional blue accent
+  static const Color accentColorDark = Color(0xFF0A84FF);
 
-  // Additional Accent Colors for Dashboard
-  static const Color accentTeal = Color(0xFF1DE9B6); // Teal accent
-  static const Color accentPurple = Color(0xFF7C4DFF); // Purple accent
-  static const Color accentYellow = Color(0xFFFFEB3B); // Yellow accent
-  static const Color accentOrange = Color(0xFFFF9100); // Orange accent
-
-  // Glow utilities for neumorphic effects
-  static Color tealGlow = const Color(0xFF1DE9B6).withAlpha(100);
-  static Color purpleGlow = const Color(0xFF7C4DFF).withAlpha(100);
-  static Color yellowGlow = const Color(0xFFFFEB3B).withAlpha(80);
-  static Color orangeGlow = const Color(0xFFFF9100).withAlpha(80);
+  // Glow effect for accents
+  static Color accentGlow = const Color(0xFF007AFF).withAlpha(100);
 
   // Neutral Palette (Light Mode)
   static const Color neutral50 = Color(0xFFfafafa);
@@ -47,17 +39,30 @@ class AppColors {
   static const Color neutral800 = Color(0xFF262626);
   static const Color neutral900 = Color(0xFF171717);
 
-  // Dark Mode Neutrals
-  static const Color darkNeutral50 = Color(0xFF18181b);
-  static const Color darkNeutral100 = Color(0xFF27272a);
-  static const Color darkNeutral200 = Color(0xFF3f3f46);
-  static const Color darkNeutral300 = Color(0xFF52525b);
-  static const Color darkNeutral400 = Color(0xFF71717a);
-  static const Color darkNeutral500 = Color(0xFF9ca3af);
-  static const Color darkNeutral600 = Color(0xFFd1d5db);
-  static const Color darkNeutral700 = Color(0xFFe5e7eb);
-  static const Color darkNeutral800 = Color(0xFFf3f4f6);
-  static const Color darkNeutral900 = Color(0xFFffffff);
+  // Dark Mode Neutrals (Professional Palette)
+  static const Color darkBackground = Color(
+    0xFF000000,
+  ); // True black background
+  static const Color darkSurface = Color(0xFF121212); // Elevated surfaces
+  static const Color darkCard = Color(0xFF1E1E1E); // Cards and dialogs
+  static const Color darkPrimaryText = Color(0xFFFFFFFF);
+  static const Color darkSecondaryText = Color(0xFFB3B3B3);
+  static const Color darkDisabledText = Color(0xFF808080);
+  static const Color darkBorder = Color(0xFF2C2C2C);
+
+  // Backwards-compatible aliases for previously-used darkNeutral* names
+  // These map the old names to the new professional palette so existing
+  // widgets that still reference darkNeutral* won't break.
+  static const Color darkNeutral50 = darkBackground;
+  static const Color darkNeutral100 = darkSurface;
+  static const Color darkNeutral200 = darkCard;
+  static const Color darkNeutral300 = darkBorder;
+  static const Color darkNeutral400 = darkSecondaryText;
+  static const Color darkNeutral500 = darkDisabledText;
+  static const Color darkNeutral600 = Color(0xFF9CA3AF);
+  static const Color darkNeutral700 = Color(0xFFE5E7EB);
+  static const Color darkNeutral800 = darkPrimaryText;
+  static const Color darkNeutral900 = darkPrimaryText;
 
   // Glass Effects
   static Color glass(double opacity) =>
@@ -65,7 +70,7 @@ class AppColors {
   static Color shadow(double opacity) =>
       Colors.black.withAlpha((255 * opacity).round());
   static Color glassDark(double opacity) =>
-      Colors.black.withAlpha((255 * opacity).round());
+      darkSurface.withAlpha((255 * opacity).round());
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(

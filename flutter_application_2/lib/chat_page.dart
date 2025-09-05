@@ -7,6 +7,7 @@ import 'embedding_service.dart';
 import 'config/env_config.dart';
 import 'package:http/http.dart' as http;
 import 'widgets/app_header.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class ChatMessage {
   final String text;
@@ -241,24 +242,43 @@ Ask me anything about hydraulic systems!""",
         });
       });
 
-      // Slow typewriter: add one character every ~60ms
+      // Word-by-word typewriter effect
       _typeTimer?.cancel();
-      _typeTimer = Timer.periodic(const Duration(milliseconds: 10), (_) {
-        if (_streamingIndex < 0) return;
-        if (_typePending.isEmpty) return;
-        final nextChar = _typePending.substring(0, 1);
-        _typePending = _typePending.substring(1);
-        _typeDisplayed += nextChar;
-        setState(() {
-          final idx = _streamingIndex;
-          _messages[idx] = ChatMessage(
-            text: _typeDisplayed,
-            isUser: false,
-            timestamp: _messages[idx].timestamp,
-            isLoading: true,
-          );
-        });
-        _scrollToBottom();
+      _typeTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+        if (_streamingIndex < 0 || !mounted) {
+          _typeTimer?.cancel();
+          return;
+        }
+
+        if (_typePending.isNotEmpty) {
+          // Find the next word boundary
+          int spaceIndex = _typePending.indexOf(' ');
+          String nextChunk;
+
+          if (spaceIndex != -1) {
+            nextChunk = _typePending.substring(0, spaceIndex + 1);
+            _typePending = _typePending.substring(spaceIndex + 1);
+          } else {
+            // If no space, it's the last part of the stream
+            nextChunk = _typePending;
+            _typePending = '';
+          }
+
+          _typeDisplayed += nextChunk;
+
+          setState(() {
+            final idx = _streamingIndex;
+            if (idx >= 0 && idx < _messages.length) {
+              _messages[idx] = ChatMessage(
+                text: _typeDisplayed,
+                isUser: false,
+                timestamp: _messages[idx].timestamp,
+                isLoading: true,
+              );
+            }
+          });
+          _scrollToBottom();
+        }
       });
 
       final stream = _service.answerUserQueryStream(
@@ -384,7 +404,7 @@ Error details: $e''';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           const AppHeader(
@@ -576,10 +596,11 @@ Ask me anything about hydraulic systems!""",
   }
 
   Widget _buildChatInput() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? Colors.black : Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
@@ -597,16 +618,19 @@ Ask me anything about hydraulic systems!""",
             decoration: InputDecoration(
               hintText: 'Type a message...',
               filled: true,
-              fillColor: const Color(0xFFF0F2F5),
+              fillColor: isDark ? Colors.black : const Color(0xFFF0F2F5),
+              hintStyle: TextStyle(
+                color: isDark ? Colors.white70 : Colors.grey,
+              ),
               contentPadding: const EdgeInsets.symmetric(vertical: 15),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30.0),
                 borderSide: BorderSide.none,
               ),
               prefixIcon: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.attach_file_outlined,
-                  color: Colors.grey,
+                  color: isDark ? Colors.white70 : Colors.grey,
                 ),
                 onPressed: () {
                   /* TODO */
@@ -616,7 +640,10 @@ Ask me anything about hydraulic systems!""",
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.mic_outlined, color: Colors.grey),
+                    icon: Icon(
+                      Icons.mic_outlined,
+                      color: isDark ? Colors.white70 : Colors.grey,
+                    ),
                     onPressed: () {
                       /* TODO */
                     },
@@ -631,7 +658,11 @@ Ask me anything about hydraulic systems!""",
                         ),
                       )
                       : IconButton(
-                        icon: const Icon(Icons.send, color: Color(0xFFdc2626)),
+                        icon: Icon(
+                          Icons.send,
+                          color:
+                              isDark ? Colors.white : const Color(0xFFfca5a5),
+                        ),
                         onPressed: _sendMessage,
                       ),
                 ],
@@ -674,7 +705,10 @@ Ask me anything about hydraulic systems!""",
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: message.isUser ? const Color(0xFFdc2626) : Colors.white,
+                color:
+                    message.isUser
+                        ? const Color.fromARGB(255, 128, 51, 51)
+                        : Colors.black,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -688,30 +722,30 @@ Ask me anything about hydraulic systems!""",
                   message.isLoading &&
                           !message.isUser &&
                           index == _streamingIndex
-                      ? RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: const Color(0xFF1e3a8a),
+                      ? MarkdownBody(
+                        data: message.text + (_cursorVisible ? ' ▍' : ''),
+                        styleSheet: MarkdownStyleSheet(
+                          p: TextStyle(
+                            color: Colors.white,
                             fontSize: _messageFontSize,
                           ),
-                          children: [
-                            TextSpan(text: message.text),
-                            if (_cursorVisible)
-                              const TextSpan(
-                                text: ' ▍',
-                                style: TextStyle(color: Color(0xFFdc2626)),
-                              ),
-                          ],
+                          strong: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       )
-                      : Text(
-                        message.text,
-                        style: TextStyle(
-                          color:
-                              message.isUser
-                                  ? Colors.white
-                                  : const Color(0xFF374151),
-                          fontSize: _messageFontSize,
+                      : MarkdownBody(
+                        data: message.text,
+                        styleSheet: MarkdownStyleSheet(
+                          p: TextStyle(
+                            color: message.isUser ? Colors.white : Colors.white,
+                            fontSize: _messageFontSize,
+                          ),
+                          strong: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: message.isUser ? Colors.white : Colors.white,
+                          ),
                         ),
                       ),
             ),

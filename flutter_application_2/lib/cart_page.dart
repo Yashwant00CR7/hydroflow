@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/products.dart';
 import 'services/cart_service.dart';
-
+import 'widgets/app_header.dart';
 import 'widgets/glass_container.dart';
 import 'theme/app_colors.dart';
 import 'invoice_page.dart';
@@ -36,13 +37,28 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBody: true,
-      appBar: AppBar(
-        title: const Text('Shopping Cart'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      body: Column(
+        children: [
+          AppHeader(
+            title: 'Shopping Cart',
+            subtitle: 'Review your items',
+            showBackButton: true,
+            onBackButtonPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const ProductsPage()),
+              );
+            },
+          ),
+          Expanded(
+            child:
+                _cartService.items.isEmpty
+                    ? _buildEmptyCart()
+                    : _buildCartItems(),
+          ),
+        ],
       ),
-      body: _cartService.items.isEmpty ? _buildEmptyCart() : _buildCartItems(),
       bottomNavigationBar: _buildBottomSection(),
     );
   }

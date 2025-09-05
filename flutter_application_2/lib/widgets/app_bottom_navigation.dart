@@ -4,6 +4,7 @@ import '../products.dart';
 import '../cart_page.dart';
 import '../services/cart_service.dart';
 import '../theme/app_colors.dart';
+import '../home.dart';
 
 class AppBottomNavigation extends StatelessWidget {
   final String currentPage; // 'home' | 'chat' | 'products' | 'cart'
@@ -40,7 +41,13 @@ class AppBottomNavigation extends StatelessWidget {
           _NavIcon(
             icon: Icons.home,
             isActive: currentPage == 'home',
-            onTap: currentPage == 'home' ? null : () {},
+            onTap:
+                currentPage == 'home'
+                    ? null
+                    : () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (c) => const HomeScreen()),
+                    ),
           ),
           _NavIcon(
             icon: Icons.chat_bubble_outline,
@@ -70,7 +77,7 @@ class AppBottomNavigation extends StatelessWidget {
             onTap:
                 currentPage == 'cart'
                     ? null
-                    : () => Navigator.push(
+                    : () => Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (c) => const CartPage()),
                     ),
@@ -94,9 +101,7 @@ class _NavIcon extends StatelessWidget {
       color:
           isActive
               ? Theme.of(context).colorScheme.secondary
-              : Theme.of(context).brightness == Brightness.dark
-              ? AppColors.techGreen
-              : Colors.white,
+              : Colors.white.withAlpha(180),
       size: 20,
     );
 
@@ -133,29 +138,26 @@ class _CartNavIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseIcon = Stack(
+      clipBehavior: Clip.none,
       children: [
         Icon(
           Icons.shopping_cart,
           color:
               isActive
                   ? Theme.of(context).colorScheme.secondary
-                  : Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.techGreen
-                  : Colors.white,
+                  : Colors.white.withAlpha(180),
           size: 20,
         ),
         if (cartService.itemCount > 0)
           Positioned(
-            right: -2,
-            top: -2,
+            right: -4,
+            top: -11,
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.error
-                        : const Color(0xFFdc2626),
+                color: Colors.red,
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1),
               ),
               constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
               child: Text(

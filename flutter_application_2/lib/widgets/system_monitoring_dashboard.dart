@@ -122,12 +122,18 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withAlpha(26),
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkSurface.withOpacity(0.06)
+                    : AppColors.primaryBlue.withAlpha(26),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.monitor_heart,
-            color: AppColors.primaryBlue,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.accentColor
+                    : AppColors.primaryBlue,
             size: 24,
           ),
         ),
@@ -140,12 +146,21 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.neutral800,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkPrimaryText
+                        : AppColors.neutral800,
               ),
             ),
             Text(
               'Real-time hydraulic system status',
-              style: TextStyle(fontSize: 14, color: AppColors.neutral500),
+              style: TextStyle(
+                fontSize: 14,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkSecondaryText
+                        : AppColors.neutral500,
+              ),
             ),
           ],
         ),
@@ -398,21 +413,31 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
     }
 
     if (alerts.isEmpty) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.success.withAlpha(26),
+          color:
+              isDark
+                  ? AppColors.darkSurface.withAlpha(30)
+                  : AppColors.success.withAlpha(26),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.success.withAlpha(77)),
+          border: Border.all(
+            color:
+                isDark ? AppColors.darkBorder : AppColors.success.withAlpha(77),
+          ),
         ),
         child: Row(
           children: [
-            Icon(Icons.check_circle, color: AppColors.success),
+            Icon(
+              Icons.check_circle,
+              color: isDark ? AppColors.success : AppColors.success,
+            ),
             const SizedBox(width: 12),
             Text(
               'All systems operating normally',
               style: TextStyle(
-                color: AppColors.success,
+                color: isDark ? AppColors.darkPrimaryText : AppColors.success,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -421,6 +446,7 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -429,7 +455,7 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.neutral800,
+            color: isDark ? AppColors.darkPrimaryText : AppColors.neutral800,
           ),
         ),
         const SizedBox(height: 8),
@@ -451,13 +477,16 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
         alertColor = AppColors.info;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: alertColor.withAlpha(26),
+        color: isDark ? AppColors.darkSurface : alertColor.withAlpha(26),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: alertColor.withAlpha(77)),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : alertColor.withAlpha(77),
+        ),
       ),
       child: Row(
         children: [
@@ -466,7 +495,10 @@ class _SystemMonitoringDashboardState extends State<SystemMonitoringDashboard> {
           Expanded(
             child: Text(
               alert['message'],
-              style: TextStyle(color: alertColor, fontSize: 14),
+              style: TextStyle(
+                color: isDark ? AppColors.darkPrimaryText : alertColor,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

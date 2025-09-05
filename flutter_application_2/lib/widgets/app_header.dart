@@ -8,12 +8,14 @@ class AppHeader extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool showBackButton;
+  final VoidCallback? onBackButtonPressed;
 
   const AppHeader({
     super.key,
     required this.title,
     required this.subtitle,
     this.showBackButton = false,
+    this.onBackButtonPressed,
   });
 
   @override
@@ -70,7 +72,7 @@ class AppHeader extends StatelessWidget {
           children: [
             if (showBackButton)
               GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: onBackButtonPressed ?? () => Navigator.pop(context),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -99,10 +101,7 @@ class AppHeader extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.arrow_back_ios,
-                    color:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.darkNeutral200
-                            : Color(0xFF1e3a8a),
+                    color: Colors.white,
                     size: 18,
                   ),
                 ),
@@ -111,24 +110,39 @@ class AppHeader extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ShaderMask(
-                    shaderCallback:
-                        (bounds) => const LinearGradient(
-                          colors: [Color(0xFF1e3a8a), Color(0xFF3b82f6)],
-                        ).createShader(bounds),
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.darkNeutral200
-                                : Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.darkPrimaryText,
+                                letterSpacing: -0.5,
+                              ),
+                            )
+                            : ShaderMask(
+                              shaderCallback:
+                                  (bounds) => const LinearGradient(
+                                    colors: [
+                                      Color(0xFF1e3a8a),
+                                      Color(0xFF3b82f6),
+                                    ],
+                                  ).createShader(bounds),
+                              child: Text(
+                                title,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -138,7 +152,7 @@ class AppHeader extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       color:
                           Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkNeutral400
+                              ? AppColors.darkPrimaryText
                               : const Color(0xFF6b7280).withAlpha(204),
                     ),
                   ),
@@ -171,7 +185,7 @@ class AppHeader extends StatelessWidget {
                       Icons.brightness_6,
                       color:
                           Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.techGreen
+                              ? AppColors.accentColor
                               : const Color(0xFF1e3a8a),
                       size: 20,
                     ),
